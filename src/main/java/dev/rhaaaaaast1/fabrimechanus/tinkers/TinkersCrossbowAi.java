@@ -2,6 +2,7 @@ package dev.rhaaaaaast1.fabrimechanus.tinkers;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.tools.item.ranged.ModifiableCrossbowItem;
@@ -47,8 +48,9 @@ public final class TinkersCrossbowAi {
         return true;
     }
 
+    /** The hand holding a Tinkers' crossbow, or null when neither hand does. */
     @Nullable
-    private static InteractionHand holdingHand(Mob mob) {
+    public static InteractionHand holdingHand(LivingEntity mob) {
         if (mob.getMainHandItem().getItem() instanceof ModifiableCrossbowItem) {
             return InteractionHand.MAIN_HAND;
         }

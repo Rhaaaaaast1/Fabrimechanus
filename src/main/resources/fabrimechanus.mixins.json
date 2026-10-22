@@ -4,6 +4,7 @@
   "package": "dev.rhaaaaaast1.fabrimechanus.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "CrossbowAttackBehaviorMixin",
     "RangedCrossbowAttackGoalMixin"
   ],
   "client": [

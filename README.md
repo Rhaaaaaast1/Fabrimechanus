@@ -44,14 +44,25 @@
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
 | `TinkersCrossbowAi` | 判断怪物是否手持匠魂弩、并发射已上膛的弩矢 |
-| `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩 |
-### 弩：直接修好原版的共享 Goal
+| `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩（掠夺者等 Goal 类生物） |
+| `mixin/CrossbowAttackBehaviorMixin` | 同样的三处补丁，作用于猪灵等 Brain 类生物的 `CrossbowAttack` 行为 |
+### 弩：直接修好原版的两套弩 AI
 
-掠夺者、猪灵以及模组生物的弩 AI 都来自同一个原版类 `RangedCrossbowAttackGoal`，所以没有给每种怪单独加 AI，而是用 Mixin 修这一处：
+原版的弩 AI 有两套，匠魂弩在两套里都会因为“只认 `CrossbowItem`”而失效，所以各用 Mixin 修一处：
+
+**Goal 类生物（掠夺者、模组生物）——`RangedCrossbowAttackGoal`**
 
 - `isHoldingCrossbow()` 只认 `CrossbowItem`，注入后也认 `ModifiableCrossbowItem`；
 - 蓄力时原版用 `ProjectileUtil.getWeaponHoldingHand(mob, item -> item instanceof CrossbowItem)` 找手，这里把谓词放宽到匠魂弩；
 - 真正开火时原版调用 `CrossbowItem.performShooting`，改为调用匠魂的 `ModifiableCrossbowItem.fireCrossbow`，发射 Goal 已经上好膛的那一发。
+
+**Brain 类生物（猪灵）——`CrossbowAttack` 行为**
+
+猪灵身上没有 `RangedCrossbowAttackGoal`，它靠 Brain 活动里的 `CrossbowAttack` 行为干活，所以上面那处 Mixin 管不到它，需要在 `CrossbowAttack` 里打同样的三个补丁：
+
+- `checkExtraStartConditions` 里的 `owner.isHolding(is -> is.getItem() instanceof CrossbowItem)` 放宽到匠魂弩，否则这个行为永远不会启动；
+- 蓄力找手的 `ProjectileUtil.getWeaponHoldingHand(...)` 谓词放宽；
+- `READY_TO_ATTACK` 阶段原本调用 `CrossbowAttackMob#performCrossbowAttack`（内部又是 `CrossbowItem.performShooting`），改为调用 `fireCrossbow`。
 
 于是“举弩 → 上弦 → 放箭”整套走位与节奏都是原版的，匠魂弩只是换了个弹道出口。1.20.1 版本没有用 Mixin（ForgeGradle 的 refmap 对 `ProjectileUtil` 重载映射不全，产物会在正式环境注入失败），那边由自己的 `TinkersRangedAttackGoal` 完成同样的工作。
 
