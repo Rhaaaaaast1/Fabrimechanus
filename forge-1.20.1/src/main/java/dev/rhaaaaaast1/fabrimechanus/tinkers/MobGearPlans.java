@@ -32,7 +32,6 @@ public final class MobGearPlans {
             .build();
         PLANS.put(EntityType.SKELETON, bowUser);
         PLANS.put(EntityType.STRAY, bowUser);
-        PLANS.put(EntityType.BOGGED, bowUser);
         // the illusioner also spawns with a bow, but its model has no armor layer, so it gets no armor
         PLANS.put(EntityType.ILLUSIONER, MobGearPlan.builder()
             .weapon(TinkerTools.longbow::get, 1)

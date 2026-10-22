@@ -3,7 +3,7 @@ package dev.rhaaaaaast1.fabrimechanus;
 import com.mojang.logging.LogUtils;
 import dev.rhaaaaaast1.fabrimechanus.tinkers.TinkersIntegration;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -19,12 +19,12 @@ public class Fabrimechanus {
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public Fabrimechanus(IEventBus modEventBus, ModContainer modContainer) {
+    public Fabrimechanus(IEventBus modEventBus) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
         // Register our mod's ForgeConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

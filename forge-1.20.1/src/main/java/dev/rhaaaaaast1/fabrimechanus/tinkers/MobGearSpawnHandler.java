@@ -91,9 +91,6 @@ public final class MobGearSpawnHandler {
 
     private static void equipArmor(Mob mob, MobGearPlan plan, RandomSource random) {
         for (ArmorItem.Type type : ArmorItem.Type.values()) {
-            if (type == ArmorItem.Type.BODY) {
-                continue;
-            }
             EquipmentSlot slot = type.getSlot();
             if (!mob.getItemBySlot(slot).isEmpty() || random.nextFloat() > 0.85F) {
                 continue;
