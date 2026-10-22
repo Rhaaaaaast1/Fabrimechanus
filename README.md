@@ -6,12 +6,7 @@
 - 怪物生成时携带匠魂工具与防具，材料按等级概率随机。
 - 剥离指定的原版工具/防具刷新，但不影响拾取，也不改动任何匠魂自带数据。
 
-仓库里有两个版本，功能完全一致：
-
-| 目录 | 目标平台 | 状态 |
-| --- | --- | --- |
-| 仓库根目录 | Minecraft 1.21.1 + NeoForge 21.1.264（依赖非官方移植版匠魂 3.13.3） | 已编译、已开服验证 |
-| `forge-1.20.1/` | Minecraft 1.20.1 + Forge 47.4.28（依赖官方匠魂 3.12.1.237） | 源码已移植，待在本机完成 ForgeGradle 初始化后编译验证 |
+本仓库是 **Minecraft 1.21.1 + NeoForge 21.1.264** 版本（依赖非官方移植版匠魂 3.13.3），已编译、已开服验证。功能一致的 **Minecraft 1.20.1 + Forge 47.4.28** 版本在另一个仓库：[Rhaaaaaast1/TinkersAdditions](https://github.com/Rhaaaaaast1/TinkersAdditions)（依赖官方匠魂 3.12.1.237）。
 
 匠魂是**可选**依赖：未安装时模组照常加载，集成代码完全跳过。
 
@@ -30,22 +25,13 @@
 
 两者分别来自 <https://github.com/zhuchuovo/TinkersConstruct-1.21.1> 和 <https://github.com/zhuchuovo/Mantle-1.21.1>（在两个仓库里各执行一次 `./gradlew build`，产物在 `build/libs/`）。`build.gradle` 用 `compileOnly files(...)` 引用，因此产出的 jar 不会打包匠魂，运行时必须由玩家自行安装。
 
-## 1.20.1 / Forge 构建
+## 1.20.1 / Forge 版本
 
-`forge-1.20.1/` 是独立的 Gradle 工程（根目录的 `settings.gradle` 不 include 它），目标 Java 17、Gradle 8.1.1。
-
-```bash
-cd forge-1.20.1
-./gradlew build
-```
-
-首次构建会执行 ForgeGradle 的 MCP 初始化（下载并反混淆 1.20.1），耗时较长。**推荐直接在 IntelliJ IDEA 里打开 `forge-1.20.1` 目录**，把 Gradle JVM 设为 JDK 17 后让它 sync 一次——IDEA 会替我们跑完这些初始化任务，之后在命令行或 IDEA 里都能正常 `build`。
-
-本机 JDK 17 在 `E:\jdk\jdk17`（Corretto 17.0.20.1）；`gradle.properties` 里已经用 `org.gradle.java.home` 指定，无需改系统环境变量。匠魂与 Mantle 的 1.20.1 jar 由 Maven 依赖 `slimeknights.tconstruct:TConstruct:1.20.1-3.12.1.237` / `slimeknights.mantle:Mantle:1.20.1-1.11.124` 自动获取（仓库 `https://dvs1.progwml6.com/files/maven/`），无需手动放 jar。
+1.20.1 版本（mod id `tinkersaddition`，工程名 Tinkers' Addition）在独立仓库 [Rhaaaaaast1/TinkersAdditions](https://github.com/Rhaaaaaast1/TinkersAdditions) 中维护，依赖官方匠魂 3.12.1.237 与 Mantle 1.11.124，构建见那边的 README。两边功能一致，只有事件/配置 API 的包名以及弩 AI 的实现方式不同（见下节）。
 
 ## 实现结构
 
-`dev.rhaaaaaast1.fabrimechanus.tinkers` 包内的类只会在检测到 `tconstruct` 时被加载（`ModList.get().isLoaded("tconstruct")`），避免未安装匠魂时出现 `NoClassDefFoundError`。两个版本的类名与职责完全一致，只有事件/配置 API 的包名不同。
+`dev.rhaaaaaast1.fabrimechanus.tinkers` 包内的类只会在检测到 `tconstruct` 时被加载（`ModList.get().isLoaded("tconstruct")`），避免未安装匠魂时出现 `NoClassDefFoundError`。1.20.1 版本类名与职责相同，只有事件/配置 API 的包名不同。
 
 | 类 | 职责 |
 | --- | --- |
@@ -56,7 +42,18 @@ cd forge-1.20.1
 | `MobGearPlan` / `MobGearPlans` | 每种怪物的装备方案（武器权重、副手、护甲概率） |
 | `MobGearSpawnHandler` | 生成时剥离原版装备、发放匠魂装备、挂载远程 AI |
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
-| `TinkersRangedAttackGoal` | 识别匠魂弓/弩的远程攻击 AI |
+| `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
+| `TinkersCrossbowAi` | 判断怪物是否手持匠魂弩、并发射已上膛的弩矢 |
+| `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩 |
+### 弩：直接修好原版的共享 Goal
+
+掠夺者、猪灵以及模组生物的弩 AI 都来自同一个原版类 `RangedCrossbowAttackGoal`，所以没有给每种怪单独加 AI，而是用 Mixin 修这一处：
+
+- `isHoldingCrossbow()` 只认 `CrossbowItem`，注入后也认 `ModifiableCrossbowItem`；
+- 蓄力时原版用 `ProjectileUtil.getWeaponHoldingHand(mob, item -> item instanceof CrossbowItem)` 找手，这里把谓词放宽到匠魂弩；
+- 真正开火时原版调用 `CrossbowItem.performShooting`，改为调用匠魂的 `ModifiableCrossbowItem.fireCrossbow`，发射 Goal 已经上好膛的那一发。
+
+于是“举弩 → 上弦 → 放箭”整套走位与节奏都是原版的，匠魂弩只是换了个弹道出口。1.20.1 版本没有用 Mixin（ForgeGradle 的 refmap 对 `ProjectileUtil` 重载映射不全，产物会在正式环境注入失败），那边由自己的 `TinkersRangedAttackGoal` 完成同样的工作。
 
 ## 材料等级概率
 

@@ -6,6 +6,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
@@ -114,6 +115,10 @@ public final class MobGearSpawnHandler {
     private static void addRangedGoal(Mob mob) {
         MobGearPlan.Ranged mode = rangedMode(mob.getMainHandItem());
         if (mode == MobGearPlan.Ranged.NONE) {
+            return;
+        }
+        // mobs with a vanilla crossbow AI keep their own goal, it is patched to drive Tinkers' crossbows as well
+        if (mode == MobGearPlan.Ranged.CROSSBOW && mob instanceof CrossbowAttackMob) {
             return;
         }
         for (WrappedGoal wrapped : mob.goalSelector.getAvailableGoals()) {
