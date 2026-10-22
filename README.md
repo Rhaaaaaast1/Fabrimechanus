@@ -45,7 +45,9 @@
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
 | `TinkersCrossbowAi` | 判断怪物是否手持匠魂弩、并发射已上膛的弩矢 |
 | `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩（掠夺者等 Goal 类生物） |
-| `mixin/CrossbowAttackBehaviorMixin` | 同样的三处补丁，作用于猪灵等 Brain 类生物的 `CrossbowAttack` 行为 |
+| `mixin/CrossbowAttackBehaviorMixin` | 同样的补丁，作用于猪灵等 Brain 类生物的 `CrossbowAttack` 行为 |
+| `mixin/PiglinCrossbowMixin` | 让 `Mob#canFireProjectileWeapon` 接受匠魂弩，猪灵才会在远程距离举弩而不是走进近战距离 |
+| `mixin/PillagerPoseMixin` / `mixin/PiglinPoseMixin` | 拿匠魂弩时保持原版持弩手臂姿势 |
 ### 弩：直接修好原版的两套弩 AI
 
 原版的弩 AI 有两套，匠魂弩在两套里都会因为“只认 `CrossbowItem`”而失效，所以各用 Mixin 修一处：
@@ -58,11 +60,16 @@
 
 **Brain 类生物（猪灵）——`CrossbowAttack` 行为**
 
-猪灵身上没有 `RangedCrossbowAttackGoal`，它靠 Brain 活动里的 `CrossbowAttack` 行为干活，所以上面那处 Mixin 管不到它，需要在 `CrossbowAttack` 里打同样的三个补丁：
+猪灵身上没有 `RangedCrossbowAttackGoal`，它靠 Brain 活动里的 `CrossbowAttack` 行为干活，所以上面那处 Mixin 管不到它，需要在 `CrossbowAttack` 里打同样的补丁：
 
 - `checkExtraStartConditions` 里的 `owner.isHolding(is -> is.getItem() instanceof CrossbowItem)` 放宽到匠魂弩，否则这个行为永远不会启动；
 - 蓄力找手的 `ProjectileUtil.getWeaponHoldingHand(...)` 谓词放宽；
-- `READY_TO_ATTACK` 阶段原本调用 `CrossbowAttackMob#performCrossbowAttack`（内部又是 `CrossbowItem.performShooting`），改为调用 `fireCrossbow`。
+- `READY_TO_ATTACK` 阶段原本调用 `CrossbowAttackMob#performCrossbowAttack`（内部又是 `CrossbowItem.performShooting`），改为调用 `fireCrossbow`；
+- 起始条件里的 `BehaviorUtils.isWithinAttackRange` 会先问 `Mob#canFireProjectileWeapon`，而猪灵的实现只认 `Items.CROSSBOW`。不修这一处，行为只有在贴身距离判定通过，于是猪灵会先跑进近战距离、只做出“上弦”的动作却不放箭——这就是玩家看到的“假上弦”。
+
+**手臂姿势**
+
+`Pillager#getArmPose`、`Piglin#getArmPose` 同样用 `isHolding(is -> is.getItem() instanceof CrossbowItem)` 决定是否显示举弩姿势：掠夺者会因为判定失败退回近战 `ATTACKING` 姿势（看起来像抡胳膊），猪灵则退回 `DEFAULT`。把这条判定放宽后，搬运匠魂弩的掠夺者/猪灵就恢复原版的持弩、蓄力姿势。
 
 于是“举弩 → 上弦 → 放箭”整套走位与节奏都是原版的，匠魂弩只是换了个弹道出口。1.20.1 版本没有用 Mixin（ForgeGradle 的 refmap 对 `ProjectileUtil` 重载映射不全，产物会在正式环境注入失败），那边由自己的 `TinkersRangedAttackGoal` 完成同样的工作。
 
