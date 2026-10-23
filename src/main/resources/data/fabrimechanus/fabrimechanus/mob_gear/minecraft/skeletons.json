@@ -3,14 +3,13 @@
   "mobs": [ "minecraft:skeleton", "minecraft:stray", "minecraft:bogged" ],
   "mainhand": {
     "chance": 1,
-    "items": [
-      {
-        "item": "tconstruct:longbow"
-      }
-    ]
+    "items": [ { "item": "tconstruct:longbow", "weight": 1 } ]
   },
   "armor": {
     "chance": 0.1,
-    "set": "plate"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }

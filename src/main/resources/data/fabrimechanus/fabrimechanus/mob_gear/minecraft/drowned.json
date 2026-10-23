@@ -2,24 +2,24 @@
   "priority": 0,
   "mobs": [ "minecraft:drowned" ],
   "mainhand": {
-    "chance": 1,
+    "chance": 0.1,
     "items": [
-      {
-        "item": "tconstruct:sword",
-        "weight": 3
-      },
-      {
-        "item": "tconstruct:dagger",
-        "weight": 3
-      },
-      {
-        "item": "tconstruct:javelin",
-        "weight": 2
-      }
+      { "item": "tconstruct:sword", "weight": 4 },
+      { "item": "tconstruct:dagger", "weight": 4 },
+      { "item": "tconstruct:cleaver", "weight": 2 },
+      { "item": "tconstruct:javelin", "weight": 3 },
+      { "item": "tconstruct:mattock", "weight": 3 },
+      { "item": "tconstruct:pickaxe", "weight": 2 },
+      { "item": "tconstruct:pickadze", "weight": 1 },
+      { "item": "tconstruct:longbow", "weight": 1 },
+      { "item": "tconstruct:crossbow", "weight": 1 }
     ]
   },
   "armor": {
     "chance": 0.08,
-    "set": "travelers"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }

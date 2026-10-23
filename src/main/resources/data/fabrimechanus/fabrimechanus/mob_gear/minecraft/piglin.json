@@ -4,16 +4,15 @@
   "mainhand": {
     "chance": 1,
     "items": [
-      {
-        "item": "tconstruct:crossbow"
-      },
-      {
-        "item": "tconstruct:sword"
-      }
+      { "item": "tconstruct:crossbow", "weight": 1 },
+      { "item": "tconstruct:sword", "weight": 1 }
     ]
   },
   "armor": {
     "chance": 0.12,
-    "set": "plate"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }

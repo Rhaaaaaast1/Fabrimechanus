@@ -3,14 +3,13 @@
   "mobs": [ "minecraft:zombified_piglin" ],
   "mainhand": {
     "chance": 1,
-    "items": [
-      {
-        "item": "tconstruct:sword"
-      }
-    ]
+    "items": [ { "item": "tconstruct:sword", "weight": 1 } ]
   },
   "armor": {
     "chance": 0.08,
-    "set": "plate"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }

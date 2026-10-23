@@ -4,18 +4,15 @@
   "mainhand": {
     "chance": 1,
     "items": [
-      {
-        "item": "tconstruct:hand_axe",
-        "weight": 5
-      },
-      {
-        "item": "tconstruct:broad_axe",
-        "weight": 3
-      }
+      { "item": "tconstruct:hand_axe", "weight": 5 },
+      { "item": "tconstruct:broad_axe", "weight": 3 }
     ]
   },
   "armor": {
     "chance": 0.07,
-    "set": "plate"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }

@@ -4,16 +4,15 @@
   "mainhand": {
     "chance": 1,
     "items": [
-      {
-        "item": "tconstruct:sword"
-      },
-      {
-        "item": "tconstruct:cleaver"
-      }
+      { "item": "tconstruct:sword", "weight": 1 },
+      { "item": "tconstruct:cleaver", "weight": 1 }
     ]
   },
   "armor": {
     "chance": 0.15,
-    "set": "plate"
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
   }
 }
