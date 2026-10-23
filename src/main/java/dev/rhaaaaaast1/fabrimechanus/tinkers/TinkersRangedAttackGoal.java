@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.library.modifiers.hook.build.ConditionalStatModifierHook;
@@ -56,6 +57,8 @@ public class TinkersRangedAttackGoal extends Goal {
     private int strafingTime = -1;
     /** Distance (squared) under which a spear thrower lets its melee goal take over, roughly 3 blocks. */
     private static final double MELEE_HANDOFF_SQR = 9.0D;
+    /** distance a spear thrower stops at, close enough to reliably hit but far enough to stay out of reach */
+    private static final double SPEAR_HOLD_SQR = 36.0D;
 
     public TinkersRangedAttackGoal(Mob mob, Ranged mode, double speedModifier, int attackIntervalMin, float attackRadius) {
         this.mob = mob;
@@ -77,7 +80,7 @@ public class TinkersRangedAttackGoal extends Goal {
             return false;
         }
         // a spear is a thrown weapon, not a replacement for melee: hand the target back to the melee goal up close
-        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR;
+        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR || !canMeleeEngage(mob, target);
     }
 
     @Override
@@ -86,7 +89,7 @@ public class TinkersRangedAttackGoal extends Goal {
         if (target == null || !isHoldingLauncher()) {
             return false;
         }
-        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR;
+        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR || !canMeleeEngage(mob, target);
     }
 
     @Override
@@ -122,6 +125,29 @@ public class TinkersRangedAttackGoal extends Goal {
             seeTime = 0;
         }
         seeTime += canSee ? 1 : -1;
+
+        if (mode == Ranged.SPEAR) {
+            // walk in until throwing range, then hold position and lob spears like a trident carrying drowned
+            // hold at throwing range during the day, but keep closing in when the melee goal can actually engage
+            double holdSqr = canMeleeEngage(mob, target) ? MELEE_HANDOFF_SQR : SPEAR_HOLD_SQR;
+            if (distSqr > holdSqr) {
+                mob.getNavigation().moveTo(target, speedModifier);
+            } else {
+                mob.getNavigation().stop();
+            }
+            mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
+            if (attackTime > 0) {
+                attackTime--;
+                return;
+            }
+            if (seeTime >= 10 && canSee && distSqr <= attackRadiusSqr) {
+                snapAim(target);
+                if (TinkersSpearAi.throwSpear(mob, target)) {
+                    attackTime = attackIntervalMin + mob.getRandom().nextInt(10);
+                }
+            }
+            return;
+        }
 
         if (distSqr <= attackRadiusSqr && seeTime >= 20) {
             mob.getNavigation().stop();
@@ -258,6 +284,17 @@ public class TinkersRangedAttackGoal extends Goal {
             return base * 20;
         }
         return Math.max(3, Math.round(base / drawSpeed));
+    }
+
+    /**
+     * A drowned only melees at night or when its target is in water ({@code Drowned#okTarget()}); during the day a spear
+     * carrying drowned has to keep throwing instead of walking up to the player and standing there doing nothing.
+     */
+    private static boolean canMeleeEngage(Mob mob, LivingEntity target) {
+        if (mob instanceof Drowned drowned) {
+            return drowned.okTarget(target);
+        }
+        return true;
     }
 
     private boolean isHoldingLauncher() {

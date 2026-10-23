@@ -84,6 +84,8 @@ public final class TinkersSpearAi {
         // spawn just outside the thrower, otherwise the projectile collides with its own owner on the first tick
         thrown.setPos(eye.x + direction.x * 0.9D, eye.y - 0.1D + direction.y * 0.9D, eye.z + direction.z * 0.9D);
         thrown.shoot(direction.x, direction.y, direction.z, speed, ModifierUtil.getInaccuracy(tool, mob));
+        thrown.onRelease(mob, PersistentDataCapability.getOrWarn(thrown));
+        level.addFreshEntity(thrown);
         level.playSound(null, mob, SoundEvents.TRIDENT_THROW.value(), SoundSource.HOSTILE, 1.0F, 1.0F);
         // deliberately no ToolDamageUtil and no inventory removal: mob spears are not consumed
         return true;
