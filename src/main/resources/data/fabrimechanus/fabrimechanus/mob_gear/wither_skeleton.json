@@ -1,0 +1,19 @@
+{
+  "priority": 5,
+  "mobs": [ "minecraft:wither_skeleton" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:sword"
+      },
+      {
+        "item": "tconstruct:cleaver"
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.5,
+    "set": "plate"
+  }
+}

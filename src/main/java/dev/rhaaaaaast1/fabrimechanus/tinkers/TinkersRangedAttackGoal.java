@@ -30,13 +30,20 @@ import java.util.EnumSet;
  * Ammo is supplied for mobs by {@link MobAmmoHandler}.
  */
 public class TinkersRangedAttackGoal extends Goal {
+    /** Which launcher the mob is holding; the goal only knows these two kinds. */
+    public enum Ranged {
+        NONE,
+        BOW,
+        CROSSBOW
+    }
+
     /** Vanilla arrow gravity, used to compensate the drop when aiming. */
     private static final double ARROW_GRAVITY = 0.05D;
     /** Rough launch speed of a fully charged Tinkers' projectile. */
     private static final double NOMINAL_ARROW_SPEED = 3.0D;
 
     private final Mob mob;
-    private final MobGearPlan.Ranged mode;
+    private final Ranged mode;
     private final double speedModifier;
     private final int attackIntervalMin;
     private final float attackRadiusSqr;
@@ -46,7 +53,7 @@ public class TinkersRangedAttackGoal extends Goal {
     private boolean strafingBackwards;
     private int strafingTime = -1;
 
-    public TinkersRangedAttackGoal(Mob mob, MobGearPlan.Ranged mode, double speedModifier, int attackIntervalMin, float attackRadius) {
+    public TinkersRangedAttackGoal(Mob mob, Ranged mode, double speedModifier, int attackIntervalMin, float attackRadius) {
         this.mob = mob;
         this.mode = mode;
         this.speedModifier = speedModifier;
@@ -55,7 +62,7 @@ public class TinkersRangedAttackGoal extends Goal {
         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
-    public MobGearPlan.Ranged mode() {
+    public Ranged mode() {
         return mode;
     }
 
@@ -151,7 +158,7 @@ public class TinkersRangedAttackGoal extends Goal {
             return;
         }
         // a loaded crossbow fires without another draw
-        if (mode == MobGearPlan.Ranged.CROSSBOW && isCrossbowLoaded()) {
+        if (mode == Ranged.CROSSBOW && isCrossbowLoaded()) {
             snapAim(target);
             fireLoadedCrossbow();
             attackTime = attackIntervalMin;
@@ -167,7 +174,7 @@ public class TinkersRangedAttackGoal extends Goal {
 
     /** Releases the charge and fires, if the tool managed to load. */
     private void releaseAndFire() {
-        if (mode == MobGearPlan.Ranged.BOW) {
+        if (mode == Ranged.BOW) {
             mob.releaseUsingItem();
             attackTime = attackIntervalMin;
             return;
@@ -213,7 +220,7 @@ public class TinkersRangedAttackGoal extends Goal {
 
     /** Number of ticks the mob has to hold the launcher before a full-power shot. */
     private int requiredDrawTicks() {
-        int base = mode == MobGearPlan.Ranged.CROSSBOW ? 25 : 20;
+        int base = mode == Ranged.CROSSBOW ? 25 : 20;
         ItemStack stack = mob.getMainHandItem();
         if (!(stack.getItem() instanceof ModifiableLauncherItem)) {
             return base;

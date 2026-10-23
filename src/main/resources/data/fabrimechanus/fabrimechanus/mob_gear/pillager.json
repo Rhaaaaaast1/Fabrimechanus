@@ -1,0 +1,12 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:pillager" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:crossbow"
+      }
+    ]
+  }
+}

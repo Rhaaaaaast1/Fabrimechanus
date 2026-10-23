@@ -1,0 +1,17 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:vindicator" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:hand_axe",
+        "weight": 5
+      },
+      {
+        "item": "tconstruct:broad_axe",
+        "weight": 4
+      }
+    ]
+  }
+}

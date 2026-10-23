@@ -38,8 +38,10 @@
 | `TinkersIntegration` | 入口：检测匠魂、注册监听器、清理材料缓存 |
 | `RandomTierMaterials` | 按等级概率为每个部件独立选材 |
 | `ToolFactory` | 用选中的材料组装出匠魂工具/防具的 `ItemStack` |
-| `VanillaGear` | 需要剥离的原版物品黑名单 |
-| `MobGearPlan` / `MobGearPlans` | 每种怪物的装备方案（武器权重、副手、护甲概率） |
+| `VanillaGear` | 判断一件装备是否属于需要剥离的原版物品（数据来自 `#fabrimechanus:stripped_monster_gear` 标签） |
+| `MobGearRule` | 一条数据包规则：哪些怪物、主手/副手权重、护甲概率与套装 |
+| `MobGearRegistry` | 规则查找表，按 `priority` 从高到低取第一条匹配 |
+| `MobGearReloadListener` | 读取 `data/<命名空间>/fabrimechanus/mob_gear/*.json`，每次数据包重载时重建规则 |
 | `MobGearSpawnHandler` | 生成时剥离原版装备、发放匠魂装备、挂载远程 AI |
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
@@ -126,6 +128,42 @@
 唤魔者、女巫、劫掠兽没有装备方案（原版也不持武器，且模型没有护甲层），只会应用下节的“剥离原版装备”。
 
 方案中**不包含任何远古工具**（战斗牌、斩首刀、战镐、熔炼锅、牛头斧），这些只由匠魂自己的怪物装备表提供。
+
+## 数据包：适配别的模组
+
+上表不是写死在代码里的，而是 `data/fabrimechanus/fabrimechanus/mob_gear/*.json` 这 12 个文件。任何整合包或附属模组只要把同样结构的 JSON 放进**自己的**命名空间（`data/<你的命名空间>/fabrimechanus/mob_gear/xxx.json`），就能给自己的怪物配装备，或覆盖本模组的规则，不需要写 Java。
+
+```json
+{
+  "priority": 10,
+  "mobs": [ "yourmod:your_zombie", "#minecraft:skeletons" ],
+  "mainhand": {
+    "chance": 1.0,
+    "items": [
+      { "item": "tconstruct:sword", "weight": 5 },
+      { "item": "tconstruct:cleaver", "weight": 2 }
+    ]
+  },
+  "offhand": { "chance": 0.0, "items": [] },
+  "armor": { "chance": 0.25, "set": "plate" }
+}
+```
+
+| 字段 | 说明 |
+| --- | --- |
+| `priority` | 整数，默认 0。规则按从高到低取**第一条**匹配，所以用 `priority: 10` 加一条只针对某个怪物的规则即可覆盖本模组的整条规则 |
+| `mobs` | 实体 id 或实体类型标签，`#` 开头表示标签；一条规则可以写多个，任意一个匹配即生效 |
+| `mainhand` / `offhand` | 槽位规则。`chance` 是“这个槽位要不要发”的概率（默认 1.0，副手一般写 0.2 之类）；`items` 里每个条目是 `item` + 可选 `weight`（默认 1），按权重挑一件 |
+| `armor` | `chance` 是整套护甲的概率，`set` 是 `plate`（板甲）、`travelers`（旅行者）或 `none`。只会填**空着的**护甲槽，不会顶掉已有的 |
+
+几个要点：
+
+- **只填空槽**：主手、副手、每个护甲槽只在为空时才填，所以匠魂自己 `tinkering/mob_equipment` 发的东西不会被顶掉，玩家丢给怪物的东西也不会被清。
+- **远古工具排除**：本模组自带的 12 个文件里没有远古工具；如果你想要，自己在规则里写 `tconstruct:battlesign` 之类的 id 即可，代码不拦。
+- **物品 id 写错**只会让这一条被跳过并在日志里留一行 `Unknown item ...`，不会让整个重载失败。
+- **材料仍然是随机的**：规则只决定“发什么工具”，每件工具的每个部件依旧按 `config/fabrimechanus-common.toml` 里的等级权重独立 roll 材料。
+- **改完执行 `/reload`** 即可生效，日志会出现 `Loaded N mob gear rules from datapacks`；启动时也会打印这一行，方便确认规则有没有被读到。
+- **想改剥离清单**（哪些原版装备不许再刷）：改 `data/fabrimechanus/tags/item/stripped_monster_gear.json` 这个物品标签，不需要动用代码。
 
 ## 兼容性约定
 

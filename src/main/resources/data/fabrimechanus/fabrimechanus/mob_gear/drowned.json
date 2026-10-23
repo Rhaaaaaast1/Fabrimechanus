@@ -1,0 +1,25 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:drowned" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:sword",
+        "weight": 3
+      },
+      {
+        "item": "tconstruct:dagger",
+        "weight": 3
+      },
+      {
+        "item": "tconstruct:javelin",
+        "weight": 2
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.25,
+    "set": "travelers"
+  }
+}

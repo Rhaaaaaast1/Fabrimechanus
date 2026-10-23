@@ -1,0 +1,28 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:zombie", "minecraft:husk" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:sword",
+        "weight": 5
+      },
+      {
+        "item": "tconstruct:cleaver",
+        "weight": 2
+      },
+      {
+        "item": "tconstruct:dagger",
+        "weight": 2
+      },
+      {
+        "item": "tconstruct:hand_axe"
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.25,
+    "set": "travelers"
+  }
+}

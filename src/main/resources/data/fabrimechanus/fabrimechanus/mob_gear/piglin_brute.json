@@ -1,0 +1,21 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:piglin_brute" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:hand_axe",
+        "weight": 5
+      },
+      {
+        "item": "tconstruct:broad_axe",
+        "weight": 3
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.2,
+    "set": "plate"
+  }
+}

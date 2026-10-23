@@ -1,0 +1,12 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:illusioner" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:longbow"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:zombified_piglin" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:sword"
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.25,
+    "set": "plate"
+  }
+}

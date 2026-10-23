@@ -1,0 +1,19 @@
+{
+  "priority": 0,
+  "mobs": [ "minecraft:piglin" ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:crossbow"
+      },
+      {
+        "item": "tconstruct:sword"
+      }
+    ]
+  },
+  "armor": {
+    "chance": 0.35,
+    "set": "plate"
+  }
+}

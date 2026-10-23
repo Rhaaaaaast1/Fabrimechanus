@@ -40,7 +40,7 @@ public final class MobGearSpawnHandler {
         if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Mob mob)) {
             return;
         }
-        MobGearPlan plan = MobGearPlans.get(mob.getType());
+        MobGearRule plan = MobGearRegistry.find(mob);
         boolean stripVanilla = mob instanceof Monster;
         if (plan == null && !stripVanilla) {
             return;
@@ -70,29 +70,29 @@ public final class MobGearSpawnHandler {
         }
     }
 
-    private static void equip(Mob mob, MobGearPlan plan) {
+    private static void equip(Mob mob, MobGearRule plan) {
         RandomSource random = mob.getRandom();
         RegistryAccess access = mob.level().registryAccess();
 
         // any slot that still holds an item belongs to Tinkers' Construct's own mob equipment tables, so it is kept as is
-        if (plan.hasWeapons() && mob.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && random.nextFloat() < plan.weaponChance()) {
-            ItemStack weapon = plan.rollWeapon(random, access);
+        if (plan.hasWeapon() && mob.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && random.nextFloat() < plan.mainhand().chance()) {
+            ItemStack weapon = plan.mainhand().roll(random, access);
             if (!weapon.isEmpty()) {
                 mob.setItemSlot(EquipmentSlot.MAINHAND, weapon);
             }
         }
-        if (mob.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && random.nextFloat() < plan.offhandChance()) {
-            ItemStack offhand = plan.rollOffhand(random, access);
+        if (mob.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && random.nextFloat() < plan.offhand().chance()) {
+            ItemStack offhand = plan.offhand().roll(random, access);
             if (!offhand.isEmpty()) {
                 mob.setItemSlot(EquipmentSlot.OFFHAND, offhand);
             }
         }
-        if (plan.armorSet() != MobGearPlan.ArmorSet.NONE && random.nextFloat() < plan.armorChance()) {
+        if (plan.armor().set() != MobGearRule.ArmorSet.NONE && random.nextFloat() < plan.armor().chance()) {
             equipArmor(mob, plan, random, access);
         }
     }
 
-    private static void equipArmor(Mob mob, MobGearPlan plan, RandomSource random, RegistryAccess access) {
+    private static void equipArmor(Mob mob, MobGearRule plan, RandomSource random, RegistryAccess access) {
         for (ArmorItem.Type type : ArmorItem.Type.values()) {
             if (type == ArmorItem.Type.BODY) {
                 continue;
@@ -101,7 +101,7 @@ public final class MobGearSpawnHandler {
             if (!mob.getItemBySlot(slot).isEmpty() || random.nextFloat() > 0.85F) {
                 continue;
             }
-            Item item = plan.armorItem(type);
+            Item item = plan.armor().item(type);
             if (item != null) {
                 ItemStack stack = ToolFactory.build(item, random, access);
                 if (!stack.isEmpty()) {
@@ -113,12 +113,12 @@ public final class MobGearSpawnHandler {
 
     /** Attaches the launcher AI when the mob is carrying a Tinkers' bow or crossbow. */
     private static void addRangedGoal(Mob mob) {
-        MobGearPlan.Ranged mode = rangedMode(mob.getMainHandItem());
-        if (mode == MobGearPlan.Ranged.NONE) {
+        TinkersRangedAttackGoal.Ranged mode = rangedMode(mob.getMainHandItem());
+        if (mode == TinkersRangedAttackGoal.Ranged.NONE) {
             return;
         }
         // mobs with a vanilla crossbow AI keep their own goal, it is patched to drive Tinkers' crossbows as well
-        if (mode == MobGearPlan.Ranged.CROSSBOW && mob instanceof CrossbowAttackMob) {
+        if (mode == TinkersRangedAttackGoal.Ranged.CROSSBOW && mob instanceof CrossbowAttackMob) {
             return;
         }
         for (WrappedGoal wrapped : mob.goalSelector.getAvailableGoals()) {
@@ -126,18 +126,18 @@ public final class MobGearSpawnHandler {
                 return;
             }
         }
-        int interval = mode == MobGearPlan.Ranged.CROSSBOW ? 30 : 20;
-        float radius = mode == MobGearPlan.Ranged.CROSSBOW ? 12.0F : 15.0F;
+        int interval = mode == TinkersRangedAttackGoal.Ranged.CROSSBOW ? 30 : 20;
+        float radius = mode == TinkersRangedAttackGoal.Ranged.CROSSBOW ? 12.0F : 15.0F;
         mob.goalSelector.addGoal(1, new TinkersRangedAttackGoal(mob, mode, 1.0D, interval, radius));
     }
 
-    private static MobGearPlan.Ranged rangedMode(ItemStack stack) {
+    private static TinkersRangedAttackGoal.Ranged rangedMode(ItemStack stack) {
         if (stack.getItem() instanceof ModifiableBowItem) {
-            return MobGearPlan.Ranged.BOW;
+            return TinkersRangedAttackGoal.Ranged.BOW;
         }
         if (stack.getItem() instanceof ModifiableCrossbowItem) {
-            return MobGearPlan.Ranged.CROSSBOW;
+            return TinkersRangedAttackGoal.Ranged.CROSSBOW;
         }
-        return MobGearPlan.Ranged.NONE;
+        return TinkersRangedAttackGoal.Ranged.NONE;
     }
 }
