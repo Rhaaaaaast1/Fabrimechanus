@@ -13,7 +13,7 @@
     ]
   },
   "armor": {
-    "chance": 0.35,
+    "chance": 0.12,
     "set": "plate"
   }
 }

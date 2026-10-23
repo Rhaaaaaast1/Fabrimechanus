@@ -22,7 +22,7 @@
     ]
   },
   "armor": {
-    "chance": 0.25,
+    "chance": 0.08,
     "set": "travelers"
   }
 }
