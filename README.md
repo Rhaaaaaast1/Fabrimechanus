@@ -46,7 +46,7 @@
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
 | `TinkersCrossbowAi` | 判断怪物是否手持匠魂弩、并发射已上膛的弩矢 |
-| `TinkersSpearAi` | 让手持匠魂矛的怪物像溺尸扔三叉戟一样投矛，且不消耗 |
+| `TinkersSpearAi` | 让手持匠魂矛的怪物像溺尸扔三叉戟一样举矛蓄力、投矛，且不消耗、不近战 |
 | `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩（掠夺者等 Goal 类生物） |
 | `mixin/CrossbowAttackBehaviorMixin` | 同样的补丁，作用于猪灵等 Brain 类生物的 `CrossbowAttack` 行为 |
 | `mixin/PiglinCrossbowMixin` | 让 `Mob#canFireProjectileWeapon` 接受匠魂弩，猪灵才会在远程距离举弩而不是走进近战距离 |
@@ -200,4 +200,4 @@ data/<命名空间>/fabrimechanus/mob_gear/
 - **剥离原版**：木/石/铁/金/钻石/下界合金的剑、镐、斧、锹、锄；皮革/锁链/铁/金/钻石/下界合金的头盔、胸甲、护腿、靴子；盾牌、弓、弩、剪刀、打火石。三叉戟、重锤、海龟壳、旗帜等特殊物品保留。
 - **拾取行为不变**：只在生成时处理一次，玩家丢出的物品仍可被怪物捡起；已经处理过的怪物从存档读回时不会重新随机（`fabrimechanus:tinkers_gear` 标记），但仍会重新挂上远程 AI（原版不保存 AI goal）。
 - **远程 AI**：`TinkersRangedAttackGoal` 复刻原版 `RangedBowAttackGoal` 的移动与侧移逻辑，但按 `ModifiableLauncherItem` 判定；弓按工具的 `DRAW_SPEED` 蓄力后释放，弩则先上膛再调用 `ModifiableCrossbowItem#fireCrossbow` 开火。箭矢由 `LivingGetProjectileEvent` 提供，只对非玩家发射器生效。
-- **怪物投矛**：手持匠魂矛（`tconstruct:javelin`，带 `throwing` 词条）的怪物会被自动挂上投矛 AI，照搬原版溺尸扔三叉戟的做法 —— 生成一个 `ThrownTool` 并朝目标抛出，但**不扣耐久、不从手里拿走**，所以怪物的矛是无限的；矛落地后不可拾取、约一分钟消失，不会变成掉落物。弹道按“眼睛 → 目标中心”的向量计算并补偿下坠，速度夹在 1.2~3.0 之间，避免高 `VELOCITY` 材料把矛直接打进实体内部；走路逻辑与“扔三叉戟的溺尸”一致：白天停在约 6 格外持续投矛；入夜或目标在水里、近战 AI 真正能生效时，会继续逼近到 3 格内并把控制权交给近战 —— 不会出现“拿着矛站着不打人”的情况。
+- **怪物投矛**：手持匠魂矛（`tconstruct:javelin`，带 `throwing` 词条）的怪物会被自动挂上投矛 AI，照搬原版溺尸扔三叉戟的做法 —— 生成一个 `ThrownTool` 并朝目标抛出，但**不扣耐久、不从手里拿走**，所以怪物的矛是无限的；矛落地后不可拾取、约一分钟消失，不会变成掉落物。投掷前会像原版三叉戟那样把矛举起来蓄力 12 tick（`UseAnim.SPEAR` 姿势），蓄满才脱手；弹道用抛物线反解（同样的 0.05 重力，取低弧解）算出俯仰角，速度夹在 1.2~3.0 之间，避免高 `VELOCITY` 材料把矛直接打进实体内部。持矛的怪物**只投矛、不近战**：投矛 AI 常驻并接管移动，白天停在约 6 格外持续投掷 —— 想让它近战，把 `javelin` 从主手池里去掉即可。
