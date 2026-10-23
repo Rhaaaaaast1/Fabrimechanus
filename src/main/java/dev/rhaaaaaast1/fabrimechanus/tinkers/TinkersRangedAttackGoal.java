@@ -54,6 +54,8 @@ public class TinkersRangedAttackGoal extends Goal {
     private boolean strafingClockwise;
     private boolean strafingBackwards;
     private int strafingTime = -1;
+    /** Distance (squared) under which a spear thrower lets its melee goal take over, roughly 3 blocks. */
+    private static final double MELEE_HANDOFF_SQR = 9.0D;
 
     public TinkersRangedAttackGoal(Mob mob, Ranged mode, double speedModifier, int attackIntervalMin, float attackRadius) {
         this.mob = mob;
@@ -70,12 +72,21 @@ public class TinkersRangedAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return mob.getTarget() != null && isHoldingLauncher();
+        LivingEntity target = mob.getTarget();
+        if (target == null || !isHoldingLauncher()) {
+            return false;
+        }
+        // a spear is a thrown weapon, not a replacement for melee: hand the target back to the melee goal up close
+        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR;
     }
 
     @Override
     public boolean canContinueToUse() {
-        return (canUse() || !mob.getNavigation().isDone()) && isHoldingLauncher();
+        LivingEntity target = mob.getTarget();
+        if (target == null || !isHoldingLauncher()) {
+            return false;
+        }
+        return mode != Ranged.SPEAR || mob.distanceToSqr(target) > MELEE_HANDOFF_SQR;
     }
 
     @Override
