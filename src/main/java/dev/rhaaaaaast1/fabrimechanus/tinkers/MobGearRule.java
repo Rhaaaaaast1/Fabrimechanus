@@ -78,19 +78,51 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
     public record Weighted(Item item, int weight) {
     }
 
-    /** Which armor set a mob may spawn with, plus the chance for the whole set. */
-    public record Armor(float chance, ArmorSet set) {
-        public static final Armor NONE = new Armor(0.0F, ArmorSet.NONE);
+    /**
+     * Which armor set a mob may spawn with, plus the chance for the whole set.
+     *
+     * <p>Several sets can be listed with weights, in which case one set is rolled per mob and the whole set uses it, so
+     * a mob never ends up with a mixed plate/travelers outfit.</p>
+     */
+    public record Armor(float chance, List<ArmorChoice> choices) {
+        public static final Armor NONE = new Armor(0.0F, List.of());
 
-        /** Resolves the armor item for one slot, or null when this rule adds no armor. */
+        public boolean isEmpty() {
+            return chance <= 0.0F || choices.isEmpty();
+        }
+
+        /** Picks the set for this mob, or {@link ArmorSet#NONE} when this rule adds no armor. */
+        public ArmorSet roll(RandomSource random) {
+            if (choices.isEmpty()) {
+                return ArmorSet.NONE;
+            }
+            int total = 0;
+            for (ArmorChoice choice : choices) {
+                total += Math.max(1, choice.weight());
+            }
+            int roll = random.nextInt(total);
+            for (ArmorChoice choice : choices) {
+                roll -= Math.max(1, choice.weight());
+                if (roll < 0) {
+                    return choice.set();
+                }
+            }
+            return choices.get(0).set();
+        }
+
+        /** Resolves the armor item for one slot, or null when the set has no piece for it. */
         @Nullable
-        public Item item(ArmorItem.Type type) {
+        public static Item item(ArmorSet set, ArmorItem.Type type) {
             return switch (set) {
                 case PLATE -> TinkerTools.plateArmor.get(type);
                 case TRAVELERS -> TinkerTools.travelersGear.get(type);
                 case NONE -> null;
             };
         }
+    }
+
+    /** One possible armor set with its relative weight. */
+    public record ArmorChoice(ArmorSet set, int weight) {
     }
 
     public enum ArmorSet {

@@ -87,12 +87,16 @@ public final class MobGearSpawnHandler {
                 mob.setItemSlot(EquipmentSlot.OFFHAND, offhand);
             }
         }
-        if (plan.armor().set() != MobGearRule.ArmorSet.NONE && random.nextFloat() < plan.armor().chance()) {
-            equipArmor(mob, plan, random, access);
+        if (!plan.armor().isEmpty() && random.nextFloat() < plan.armor().chance()) {
+            // one set for the whole mob, so plate and travelers pieces are never mixed
+            MobGearRule.ArmorSet set = plan.armor().roll(random);
+            if (set != MobGearRule.ArmorSet.NONE) {
+                equipArmor(mob, set, random, access);
+            }
         }
     }
 
-    private static void equipArmor(Mob mob, MobGearRule plan, RandomSource random, RegistryAccess access) {
+    private static void equipArmor(Mob mob, MobGearRule.ArmorSet set, RandomSource random, RegistryAccess access) {
         for (ArmorItem.Type type : ArmorItem.Type.values()) {
             if (type == ArmorItem.Type.BODY) {
                 continue;
@@ -101,7 +105,7 @@ public final class MobGearSpawnHandler {
             if (!mob.getItemBySlot(slot).isEmpty() || random.nextFloat() > 0.85F) {
                 continue;
             }
-            Item item = plan.armor().item(type);
+            Item item = MobGearRule.Armor.item(set, type);
             if (item != null) {
                 ItemStack stack = ToolFactory.build(item, random, access);
                 if (!stack.isEmpty()) {

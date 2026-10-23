@@ -153,21 +153,46 @@ public final class MobGearReloadListener extends SimpleJsonResourceReloadListene
         ).apply(instance, ItemJson::new));
     }
 
-    record ArmorJson(float chance, String set) {
+    /** Accepts both {@code "set": "plate"} and {@code "sets": [{"set": "plate", "weight": 3}, ...]}. */
+    record ArmorJson(float chance, Optional<String> set, List<SetJson> sets) {
         static final Codec<ArmorJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.FLOAT.optionalFieldOf("chance", 0.0F).forGetter(ArmorJson::chance),
-                Codec.STRING.optionalFieldOf("set", "none").forGetter(ArmorJson::set)
+                Codec.STRING.optionalFieldOf("set").forGetter(ArmorJson::set),
+                SetJson.CODEC.listOf().optionalFieldOf("sets", List.of()).forGetter(ArmorJson::sets)
         ).apply(instance, ArmorJson::new));
 
         MobGearRule.Armor toArmor() {
-            MobGearRule.ArmorSet armorSet;
-            try {
-                armorSet = MobGearRule.ArmorSet.valueOf(set.toUpperCase(Locale.ROOT));
-            } catch (IllegalArgumentException exception) {
-                LOGGER.warn("Unknown armor set '{}' in mob gear data, expected plate/travelers/none", set);
-                armorSet = MobGearRule.ArmorSet.NONE;
+            List<MobGearRule.ArmorChoice> choices = new ArrayList<>();
+            for (SetJson json : this.sets) {
+                MobGearRule.ArmorSet set = parseSet(json.set());
+                if (set != MobGearRule.ArmorSet.NONE) {
+                    choices.add(new MobGearRule.ArmorChoice(set, json.weight()));
+                }
             }
-            return new MobGearRule.Armor(chance, armorSet);
+            if (choices.isEmpty() && this.set.isPresent()) {
+                MobGearRule.ArmorSet set = parseSet(this.set.get());
+                if (set != MobGearRule.ArmorSet.NONE) {
+                    choices.add(new MobGearRule.ArmorChoice(set, 1));
+                }
+            }
+            return choices.isEmpty() ? MobGearRule.Armor.NONE : new MobGearRule.Armor(chance, List.copyOf(choices));
+        }
+    }
+
+    record SetJson(String set, int weight) {
+        static final Codec<SetJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.STRING.fieldOf("set").forGetter(SetJson::set),
+                Codec.INT.optionalFieldOf("weight", 1).forGetter(SetJson::weight)
+        ).apply(instance, SetJson::new));
+    }
+
+    /** Parses an armor set name, warning and falling back to {@code none} for unknown values. */
+    private static MobGearRule.ArmorSet parseSet(String name) {
+        try {
+            return MobGearRule.ArmorSet.valueOf(name.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            LOGGER.warn("Unknown armor set '{}' in mob gear data, expected plate/travelers/none", name);
+            return MobGearRule.ArmorSet.NONE;
         }
     }
 }

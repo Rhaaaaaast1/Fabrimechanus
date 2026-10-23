@@ -162,7 +162,25 @@ data/<命名空间>/fabrimechanus/mob_gear/
 | `priority` | 整数，默认 0。规则按从高到低取**第一条**匹配，所以用 `priority: 10` 加一条只针对某个怪物的规则即可覆盖本模组的整条规则 |
 | `mobs` | 实体 id 或实体类型标签，`#` 开头表示标签；一条规则可以写多个，任意一个匹配即生效 |
 | `mainhand` / `offhand` | 槽位规则。`chance` 是“这个槽位要不要发”的概率（默认 1.0，副手一般写 0.2 之类）；`items` 里每个条目是 `item` + 可选 `weight`（默认 1），按权重挑一件 |
-| `armor` | `chance` 是整套护甲的概率，`set` 是 `plate`（板甲）、`travelers`（旅行者）或 `none`。只会填**空着的**护甲槽，不会顶掉已有的 |
+| `armor` | `chance` 是整套护甲的概率；套装可以用 `set` 写一个（`plate` / `travelers` / `none`），也可以用 `sets` 写多个带权重的套装，见下 |
+
+`armor` 的两种写法等价，第二种可以在多个套装之间按权重随机，但**一只怪只会用其中一套**（不会出现板甲头盔配旅行者胸甲）：
+
+```json
+"armor": { "chance": 0.3, "set": "plate" }
+```
+
+```json
+"armor": {
+  "chance": 0.3,
+  "sets": [
+    { "set": "plate", "weight": 3 },
+    { "set": "travelers", "weight": 1 }
+  ]
+}
+```
+
+`sets` 里 `weight` 缺省为 1；同一套的四个部位仍然各自有 15% 的概率缺席（原版的“零散装备”感），所以一整套并不总是四件齐全。
 
 几个要点：
 
