@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CrossbowAttackBehaviorMixin",
+    "DrownedMeleeMixin",
     "PiglinCrossbowMixin",
     "PillagerPoseMixin",
     "PiglinPoseMixin",

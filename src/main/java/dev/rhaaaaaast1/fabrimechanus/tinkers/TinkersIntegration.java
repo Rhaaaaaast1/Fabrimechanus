@@ -38,5 +38,6 @@ public final class TinkersIntegration {
         NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddReloadListenerEvent.class, event -> event.addListener(new MobGearReloadListener()));
         // materials live in a dynamic registry, so the tier cache must not survive a server restart
         NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStoppedEvent.class, event -> RandomTierMaterials.invalidate());
+
     }
 }
