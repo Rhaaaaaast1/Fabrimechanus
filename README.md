@@ -41,7 +41,7 @@
 | `VanillaGear` | 判断一件装备是否属于需要剥离的原版物品（数据来自 `#fabrimechanus:stripped_monster_gear` 标签） |
 | `MobGearRule` | 一条数据包规则：哪些怪物、主手/副手权重、护甲概率与套装 |
 | `MobGearRegistry` | 规则查找表，按 `priority` 从高到低取第一条匹配 |
-| `MobGearReloadListener` | 读取 `data/<命名空间>/fabrimechanus/mob_gear/*.json`，每次数据包重载时重建规则 |
+| `MobGearReloadListener` | 读取 `data/<命名空间>/fabrimechanus/mob_gear/{minecraft,compat}/**/*.json`，每次数据包重载时重建规则 |
 | `MobGearSpawnHandler` | 生成时剥离原版装备、发放匠魂装备、挂载远程 AI |
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
@@ -131,7 +131,15 @@
 
 ## 数据包：适配别的模组
 
-上表不是写死在代码里的，而是 `data/fabrimechanus/fabrimechanus/mob_gear/*.json` 这 12 个文件。任何整合包或附属模组只要把同样结构的 JSON 放进**自己的**命名空间（`data/<你的命名空间>/fabrimechanus/mob_gear/xxx.json`），就能给自己的怪物配装备，或覆盖本模组的规则，不需要写 Java。
+上表不是写死在代码里的，而是 `data/fabrimechanus/fabrimechanus/mob_gear/minecraft/` 下的 12 个文件。目录按**怪物来自哪个模组**分两层：
+
+```
+data/<命名空间>/fabrimechanus/mob_gear/
+├── minecraft/        原版怪物（本模组的 12 个文件都在这里）
+└── compat/           其它模组的怪物，按模组再分一层，例如 compat/iceandfire/dragon.json
+```
+
+本模组目前没有联动模组，所以 `compat/` 是空的。任何整合包或附属模组只要把同样结构的 JSON 放进**自己的**命名空间（`data/<你的命名空间>/fabrimechanus/mob_gear/compat/<模组id>/xxx.json`），就能给自己的怪物配装备，或覆盖本模组的规则，不需要写 Java；原版怪物想覆盖就放到 `minecraft/` 下并调高 `priority`。两个子目录只是约定，放错位置也仍然会加载，但日志会警告一句。
 
 ```json
 {
@@ -162,7 +170,7 @@
 - **远古工具排除**：本模组自带的 12 个文件里没有远古工具；如果你想要，自己在规则里写 `tconstruct:battlesign` 之类的 id 即可，代码不拦。
 - **物品 id 写错**只会让这一条被跳过并在日志里留一行 `Unknown item ...`，不会让整个重载失败。
 - **材料仍然是随机的**：规则只决定“发什么工具”，每件工具的每个部件依旧按 `config/fabrimechanus-common.toml` 里的等级权重独立 roll 材料。
-- **改完执行 `/reload`** 即可生效，日志会出现 `Loaded N mob gear rules from datapacks`；启动时也会打印这一行，方便确认规则有没有被读到。
+- **改完执行 `/reload`** 即可生效，日志会出现 `Loaded N mob gear rules from datapacks (minecraft: X, compat: Y, other: Z)`，`other` 不为 0 说明有文件放错了目录；启动时也会打印这一行，方便确认规则有没有被读到。
 - **想改剥离清单**（哪些原版装备不许再刷）：改 `data/fabrimechanus/tags/item/stripped_monster_gear.json` 这个物品标签，不需要动用代码。
 
 ## 兼容性约定

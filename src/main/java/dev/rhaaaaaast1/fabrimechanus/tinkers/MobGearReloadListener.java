@@ -25,7 +25,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Loads the mob gear rules from {@code data/<namespace>/fabrimechanus/mob_gear/*.json}.
+ * Loads the mob gear rules from {@code data/<namespace>/fabrimechanus/mob_gear/**}{@code /*.json}.
+ *
+ * <p>The folder is split by the mod the mobs come from: vanilla mobs live in {@code mob_gear/minecraft/}, mobs added by
+ * other mods go into {@code mob_gear/compat/} (usually into {@code mob_gear/compat/<modid>/}). The paths are only
+ * organisational, but rules outside those two folders are reported, since they are almost always a mistake.</p>
  *
  * <p>The listener is what makes the feature pack friendly: any mod or pack can add rules for its own mobs by dropping a
  * JSON file into that folder, and can override a shipped rule by using a higher {@code priority}. The file format is
@@ -34,6 +38,10 @@ import java.util.Optional;
 public final class MobGearReloadListener extends SimpleJsonResourceReloadListener {
     /** Folder name inside a datapack's {@code data/<namespace>/} directory. */
     public static final String DIRECTORY = "fabrimechanus/mob_gear";
+    /** Sub folder holding rules for vanilla mobs. */
+    public static final String VANILLA = "minecraft";
+    /** Sub folder holding rules for mobs added by other mods. */
+    public static final String COMPAT = "compat";
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setLenient().create();
@@ -45,7 +53,20 @@ public final class MobGearReloadListener extends SimpleJsonResourceReloadListene
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> files, ResourceManager manager, ProfilerFiller profiler) {
         List<MobGearRule> rules = new ArrayList<>();
+        int vanilla = 0;
+        int compat = 0;
+        int other = 0;
         for (Map.Entry<ResourceLocation, JsonElement> entry : files.entrySet()) {
+            String path = entry.getKey().getPath();
+            if (path.startsWith(VANILLA + "/")) {
+                vanilla++;
+            } else if (path.startsWith(COMPAT + "/")) {
+                compat++;
+            } else {
+                other++;
+                LOGGER.warn("Mob gear file {} is outside '{}/' and '{}/', it works but should be moved into one of them",
+                        entry.getKey(), VANILLA, COMPAT);
+            }
             DataResult<MobGearJson> parsed = MobGearJson.CODEC.parse(JsonOps.INSTANCE, entry.getValue());
             MobGearJson json = parsed.resultOrPartial(error -> LOGGER.warn("Skipping mob gear file {}: {}", entry.getKey(), error)).orElse(null);
             if (json != null) {
@@ -56,7 +77,8 @@ public final class MobGearReloadListener extends SimpleJsonResourceReloadListene
             }
         }
         MobGearRegistry.reload(rules);
-        LOGGER.info("Loaded {} mob gear rules from datapacks", rules.size());
+        LOGGER.info("Loaded {} mob gear rules from datapacks ({}: {}, {}: {}, other: {})", rules.size(),
+                VANILLA, vanilla, COMPAT, compat, other);
     }
 
     /** Raw JSON shape of one file. Kept separate from {@link MobGearRule} so the format can evolve on its own. */
