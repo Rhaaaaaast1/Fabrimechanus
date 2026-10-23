@@ -4,8 +4,9 @@
   "mainhand": {
     "chance": 1,
     "items": [
-      { "item": "tconstruct:hand_axe", "weight": 5 },
-      { "item": "tconstruct:broad_axe", "weight": 3 }
+      { "item": "tconstruct:hand_axe", "weight": 7 },
+      { "item": "tconstruct:kama", "weight": 1 },
+      { "item": "tconstruct:broad_axe", "weight": 1 }
     ]
   },
   "armor": {

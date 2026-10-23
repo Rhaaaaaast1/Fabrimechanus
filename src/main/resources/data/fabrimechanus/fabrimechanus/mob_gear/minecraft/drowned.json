@@ -4,15 +4,18 @@
   "mainhand": {
     "chance": 0.1,
     "items": [
-      { "item": "tconstruct:sword", "weight": 4 },
-      { "item": "tconstruct:dagger", "weight": 4 },
+      { "item": "tconstruct:pickaxe", "weight": 6 },
+      { "item": "tconstruct:mattock", "weight": 6 },
+      { "item": "tconstruct:pickadze", "weight": 4 },
+      { "item": "tconstruct:hand_axe", "weight": 5 },
+      { "item": "tconstruct:kama", "weight": 5 },
+      { "item": "tconstruct:dagger", "weight": 5 },
+      { "item": "tconstruct:sword", "weight": 6 },
+      { "item": "tconstruct:flint_and_brick", "weight": 1 },
       { "item": "tconstruct:cleaver", "weight": 2 },
-      { "item": "tconstruct:javelin", "weight": 3 },
-      { "item": "tconstruct:mattock", "weight": 3 },
-      { "item": "tconstruct:pickaxe", "weight": 2 },
-      { "item": "tconstruct:pickadze", "weight": 1 },
-      { "item": "tconstruct:longbow", "weight": 1 },
-      { "item": "tconstruct:crossbow", "weight": 1 }
+      { "item": "tconstruct:broad_axe", "weight": 1 },
+      { "item": "tconstruct:scythe", "weight": 1 },
+      { "item": "tconstruct:javelin", "weight": 3 }
     ]
   },
   "armor": {

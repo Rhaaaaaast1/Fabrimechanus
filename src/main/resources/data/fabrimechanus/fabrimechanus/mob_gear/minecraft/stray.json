@@ -1,12 +1,20 @@
 {
   "priority": 0,
-  "mobs": [
-    "minecraft:stray"
-  ],
+  "mobs": [ "minecraft:stray" ],
   "mainhand": {
     "chance": 1,
     "items": [
-      { "item": "tconstruct:longbow", "weight": 1 }
+      { "item": "tconstruct:longbow", "weight": 85 },
+      { "item": "tconstruct:pickaxe", "weight": 1 },
+      { "item": "tconstruct:mattock", "weight": 1 },
+      { "item": "tconstruct:pickadze", "weight": 1 },
+      { "item": "tconstruct:hand_axe", "weight": 2 },
+      { "item": "tconstruct:kama", "weight": 2 },
+      { "item": "tconstruct:dagger", "weight": 2 },
+      { "item": "tconstruct:sword", "weight": 2 },
+      { "item": "tconstruct:cleaver", "weight": 1 },
+      { "item": "tconstruct:broad_axe", "weight": 1 },
+      { "item": "tconstruct:scythe", "weight": 1 }
     ]
   },
   "armor": {
