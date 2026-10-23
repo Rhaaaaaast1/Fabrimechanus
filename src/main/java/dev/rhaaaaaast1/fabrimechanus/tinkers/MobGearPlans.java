@@ -9,9 +9,11 @@ import java.util.Map;
 /**
  * Per mob type gear table: which Tinkers' weapons and armor a mob may spawn with.
  *
- * <p>Weapons follow vanilla exactly: a mob that spawns holding a bow gets the Tinkers' longbow, a mob holding an axe gets
- * a hand axe or broad axe, and so on. Mobs that spawn empty handed in vanilla (zombie, husk, zombie villager, evoker,
- * witch, ravager) never receive a weapon here.</p>
+ * <p>Weapons follow vanilla as closely as possible: a mob that spawns holding a bow gets the Tinkers' longbow, a mob
+ * holding an axe gets a hand axe or broad axe, and so on. The one deliberate exception is the zombie family, which is
+ * bare handed in vanilla: zombies, husks, zombie villagers and drowned still roll a Tinkers' weapon, otherwise the only
+ * thing they would ever pick up is Tinkers' Construct own melting pan. A drowned that spawned with a trident or fishing
+ * rod keeps it, since the weapon roll only fills an empty hand.</p>
  *
  * <p>Armor is deliberately more generous than vanilla: every humanoid monster whose model can render armor may spawn
  * with a random piece of Tinkers' plate or travelers' gear, which is the main source of the armor variety this feature
@@ -47,21 +49,31 @@ public final class MobGearPlans {
             .armor(0.5f, MobGearPlan.ArmorSet.PLATE)
             .build());
 
-        // --- mobs that spawn empty handed in vanilla only get armor ---------------------------------------
+        // --- zombies: bare handed in vanilla, but they should still carry Tinkers' weapons -----------------
         MobGearPlan zombie = MobGearPlan.builder()
-            .weaponChance(0.0f)
+            .weapon(TinkerTools.sword::get, 5)
+            .weapon(TinkerTools.cleaver::get, 2)
+            .weapon(TinkerTools.dagger::get, 2)
+            .weapon(TinkerTools.handAxe::get, 1)
+            .weaponChance(1.0f)
             .armor(0.25f, MobGearPlan.ArmorSet.TRAVELERS)
             .build();
         PLANS.put(EntityType.ZOMBIE, zombie);
         PLANS.put(EntityType.HUSK, zombie);
         PLANS.put(EntityType.ZOMBIE_VILLAGER, MobGearPlan.builder()
-            .weaponChance(0.0f)
+            .weapon(TinkerTools.sword::get, 4)
+            .weapon(TinkerTools.cleaver::get, 3)
+            .weapon(TinkerTools.dagger::get, 2)
+            .weaponChance(1.0f)
             .armor(0.3f, MobGearPlan.ArmorSet.PLATE)
             .build());
 
-        // --- drowned keep their trident or fishing rod, so only armor is added ------------------------------
+        // --- drowned keep their trident or fishing rod, the weapon roll only fills an empty hand ------------
         PLANS.put(EntityType.DROWNED, MobGearPlan.builder()
-            .weaponChance(0.0f)
+            .weapon(TinkerTools.sword::get, 3)
+            .weapon(TinkerTools.dagger::get, 3)
+            .weapon(TinkerTools.javelin::get, 2)
+            .weaponChance(1.0f)
             .armor(0.25f, MobGearPlan.ArmorSet.TRAVELERS)
             .build());
 
