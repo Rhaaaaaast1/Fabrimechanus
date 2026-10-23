@@ -46,6 +46,7 @@
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓（以及没有原版弩 Goal 的怪物）的远程攻击 AI |
 | `TinkersCrossbowAi` | 判断怪物是否手持匠魂弩、并发射已上膛的弩矢 |
+| `TinkersSpearAi` | 让手持匠魂矛的怪物像溺尸扔三叉戟一样投矛，且不消耗 |
 | `mixin/RangedCrossbowAttackGoalMixin` | 让原版共享的 `RangedCrossbowAttackGoal` 直接驱动匠魂弩（掠夺者等 Goal 类生物） |
 | `mixin/CrossbowAttackBehaviorMixin` | 同样的补丁，作用于猪灵等 Brain 类生物的 `CrossbowAttack` 行为 |
 | `mixin/PiglinCrossbowMixin` | 让 `Mob#canFireProjectileWeapon` 接受匠魂弩，猪灵才会在远程距离举弩而不是走进近战距离 |
@@ -190,6 +191,7 @@ data/<命名空间>/fabrimechanus/mob_gear/
 - **材料仍然是随机的**：规则只决定“发什么工具”，每件工具的每个部件依旧按 `config/fabrimechanus-common.toml` 里的等级权重独立 roll 材料。
 - **改完执行 `/reload`** 即可生效，日志会出现 `Loaded N mob gear rules from datapacks (minecraft: X, compat: Y, other: Z)`，`other` 不为 0 说明有文件放错了目录；启动时也会打印这一行，方便确认规则有没有被读到。
 - **想改剥离清单**（哪些原版装备不许再刷）：改 `data/fabrimechanus/tags/item/stripped_monster_gear.json` 这个物品标签，不需要动用代码。
+- **想让怪物投矛**：把 `tconstruct:javelin` 写进某个规则的主手 `items` 即可，怪物拿到后会自己投（不消耗、不掉落）；权重写大一点就能看到明显的投矛行为。
 
 ## 兼容性约定
 
@@ -198,3 +200,4 @@ data/<命名空间>/fabrimechanus/mob_gear/
 - **剥离原版**：木/石/铁/金/钻石/下界合金的剑、镐、斧、锹、锄；皮革/锁链/铁/金/钻石/下界合金的头盔、胸甲、护腿、靴子；盾牌、弓、弩、剪刀、打火石。三叉戟、重锤、海龟壳、旗帜等特殊物品保留。
 - **拾取行为不变**：只在生成时处理一次，玩家丢出的物品仍可被怪物捡起；已经处理过的怪物从存档读回时不会重新随机（`fabrimechanus:tinkers_gear` 标记），但仍会重新挂上远程 AI（原版不保存 AI goal）。
 - **远程 AI**：`TinkersRangedAttackGoal` 复刻原版 `RangedBowAttackGoal` 的移动与侧移逻辑，但按 `ModifiableLauncherItem` 判定；弓按工具的 `DRAW_SPEED` 蓄力后释放，弩则先上膛再调用 `ModifiableCrossbowItem#fireCrossbow` 开火。箭矢由 `LivingGetProjectileEvent` 提供，只对非玩家发射器生效。
+- **怪物投矛**：手持匠魂矛（`tconstruct:javelin`，带 `throwing` 词条）的怪物会被自动挂上投矛 AI，照搬原版溺尸扔三叉戟的做法 —— 生成一个 `ThrownTool` 并朝目标抛出，但**不扣耐久、不从手里拿走**，所以怪物的矛是无限的；矛落地后不可拾取、约一分钟消失，不会变成掉落物。弹道按“眼睛 → 目标中心”的向量计算并补偿下坠，速度夹在 1.2~3.0 之间，避免高 `VELOCITY` 材料把矛直接打进实体内部。

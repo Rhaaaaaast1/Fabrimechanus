@@ -115,7 +115,7 @@ public final class MobGearSpawnHandler {
         }
     }
 
-    /** Attaches the launcher AI when the mob is carrying a Tinkers' bow or crossbow. */
+    /** Attaches the ranged AI when the mob is carrying a Tinkers' launcher or spear. */
     private static void addRangedGoal(Mob mob) {
         TinkersRangedAttackGoal.Ranged mode = rangedMode(mob.getMainHandItem());
         if (mode == TinkersRangedAttackGoal.Ranged.NONE) {
@@ -130,8 +130,12 @@ public final class MobGearSpawnHandler {
                 return;
             }
         }
-        int interval = mode == TinkersRangedAttackGoal.Ranged.CROSSBOW ? 30 : 20;
-        float radius = mode == TinkersRangedAttackGoal.Ranged.CROSSBOW ? 12.0F : 15.0F;
+        int interval = switch (mode) {
+            case CROSSBOW -> 30;
+            case SPEAR -> 40;
+            default -> 20;
+        };
+        float radius = mode == TinkersRangedAttackGoal.Ranged.BOW ? 15.0F : 12.0F;
         mob.goalSelector.addGoal(1, new TinkersRangedAttackGoal(mob, mode, 1.0D, interval, radius));
     }
 
@@ -141,6 +145,9 @@ public final class MobGearSpawnHandler {
         }
         if (stack.getItem() instanceof ModifiableCrossbowItem) {
             return TinkersRangedAttackGoal.Ranged.CROSSBOW;
+        }
+        if (TinkersSpearAi.isSpear(stack)) {
+            return TinkersRangedAttackGoal.Ranged.SPEAR;
         }
         return TinkersRangedAttackGoal.Ranged.NONE;
     }

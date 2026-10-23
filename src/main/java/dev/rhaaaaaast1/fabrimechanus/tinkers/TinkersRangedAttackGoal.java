@@ -26,15 +26,17 @@ import java.util.EnumSet;
  *   <li>bow: charge for the tool's draw speed, then release, which fires through {@code ModifiableBowItem}</li>
  *   <li>crossbow: charge, release to load, then fire the loaded projectile through
  *       {@code ModifiableCrossbowItem#fireCrossbow}</li>
+ *   <li>spear: throw a {@code ThrownTool} like a drowned throws its trident, without consuming the spear</li>
  * </ul>
  * Ammo is supplied for mobs by {@link MobAmmoHandler}.
  */
 public class TinkersRangedAttackGoal extends Goal {
-    /** Which launcher the mob is holding; the goal only knows these two kinds. */
+    /** Which weapon the mob is holding; the goal only knows these kinds. */
     public enum Ranged {
         NONE,
         BOW,
-        CROSSBOW
+        CROSSBOW,
+        SPEAR
     }
 
     /** Vanilla arrow gravity, used to compensate the drop when aiming. */
@@ -150,6 +152,21 @@ public class TinkersRangedAttackGoal extends Goal {
             return;
         }
 
+        if (mode == Ranged.SPEAR) {
+            if (attackTime > 0) {
+                attackTime--;
+                return;
+            }
+            if (seeTime < -60 || !canSee || distSqr > attackRadiusSqr) {
+                return;
+            }
+            snapAim(target);
+            if (TinkersSpearAi.throwSpear(mob, target)) {
+                attackTime = attackIntervalMin + mob.getRandom().nextInt(10);
+            }
+            return;
+        }
+
         if (attackTime > 0) {
             attackTime--;
             return;
@@ -237,6 +254,7 @@ public class TinkersRangedAttackGoal extends Goal {
         return switch (mode) {
             case BOW -> stack.getItem() instanceof ModifiableBowItem;
             case CROSSBOW -> stack.getItem() instanceof ModifiableCrossbowItem;
+            case SPEAR -> TinkersSpearAi.isHoldingSpear(mob);
             case NONE -> false;
         };
     }
