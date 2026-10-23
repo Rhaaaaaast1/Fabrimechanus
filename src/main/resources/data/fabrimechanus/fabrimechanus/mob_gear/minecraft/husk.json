@@ -1,0 +1,28 @@
+{
+  "priority": 0,
+  "mobs": [
+    "minecraft:husk"
+  ],
+  "mainhand": {
+    "chance": 0.02,
+    "items": [
+      { "item": "tconstruct:sword", "weight": 5 },
+      { "item": "tconstruct:cleaver", "weight": 3 },
+      { "item": "tconstruct:dagger", "weight": 4 },
+      { "item": "tconstruct:hand_axe", "weight": 2 },
+      { "item": "tconstruct:mattock", "weight": 8 },
+      { "item": "tconstruct:pickaxe", "weight": 7 },
+      { "item": "tconstruct:pickadze", "weight": 5 },
+      { "item": "tconstruct:excavator", "weight": 2 },
+      { "item": "tconstruct:longbow", "weight": 2 },
+      { "item": "tconstruct:crossbow", "weight": 1 }
+    ]
+  },
+  "armor": {
+    "chance": 0.08,
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
+  }
+}

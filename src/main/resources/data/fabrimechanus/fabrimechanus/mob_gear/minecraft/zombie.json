@@ -1,6 +1,6 @@
 {
   "priority": 0,
-  "mobs": [ "minecraft:zombie", "minecraft:husk" ],
+  "mobs": [ "minecraft:zombie" ],
   "mainhand": {
     "chance": 0.02,
     "items": [

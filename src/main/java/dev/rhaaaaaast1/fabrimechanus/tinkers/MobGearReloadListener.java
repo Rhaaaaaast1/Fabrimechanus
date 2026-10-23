@@ -70,9 +70,14 @@ public final class MobGearReloadListener extends SimpleJsonResourceReloadListene
             DataResult<MobGearJson> parsed = MobGearJson.CODEC.parse(JsonOps.INSTANCE, entry.getValue());
             MobGearJson json = parsed.resultOrPartial(error -> LOGGER.warn("Skipping mob gear file {}: {}", entry.getKey(), error)).orElse(null);
             if (json != null) {
-                MobGearRule rule = json.toRule(entry.getKey());
-                if (rule != null) {
-                    rules.add(rule);
+                try {
+                    MobGearRule rule = json.toRule(entry.getKey());
+                    if (rule != null) {
+                        rules.add(rule);
+                    }
+                } catch (RuntimeException exception) {
+                    // one broken file must never take down the whole reload, other packs still need their rules
+                    LOGGER.error("Failed to build mob gear rule from {}", entry.getKey(), exception);
                 }
             }
         }

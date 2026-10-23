@@ -4,6 +4,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -62,11 +63,11 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
             }
             int total = 0;
             for (Weighted weighted : items) {
-                total += Math.max(1, weighted.weight());
+                total = addWeight(total, weighted.weight());
             }
             int roll = random.nextInt(total);
             for (Weighted weighted : items) {
-                roll -= Math.max(1, weighted.weight());
+                roll -= clampWeight(weighted.weight());
                 if (roll < 0) {
                     return ToolFactory.build(weighted.item(), random, access);
                 }
@@ -98,11 +99,11 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
             }
             int total = 0;
             for (ArmorChoice choice : choices) {
-                total += Math.max(1, choice.weight());
+                total = addWeight(total, choice.weight());
             }
             int roll = random.nextInt(total);
             for (ArmorChoice choice : choices) {
-                roll -= Math.max(1, choice.weight());
+                roll -= clampWeight(choice.weight());
                 if (roll < 0) {
                     return choice.set();
                 }
@@ -147,5 +148,18 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
 
     public static TagKey<EntityType<?>> entityTag(ResourceLocation id) {
         return TagKey.create(Registries.ENTITY_TYPE, id);
+    }
+
+    /** Upper bound for a single relative weight, so a hand written file cannot starve every other entry. */
+    private static final int MAX_WEIGHT = 100_000;
+
+    /** Weights below one would make {@code nextInt(total)} meaningless, so they are treated as a single share. */
+    private static int clampWeight(int weight) {
+        return Mth.clamp(weight, 1, MAX_WEIGHT);
+    }
+
+    /** Saturating sum, a pack listing thousands of entries must not overflow the roll into a negative bound. */
+    private static int addWeight(int total, int weight) {
+        return (int) Math.min(Integer.MAX_VALUE, (long) total + clampWeight(weight));
     }
 }

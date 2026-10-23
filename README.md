@@ -132,7 +132,7 @@
 
 ## 数据包：适配别的模组
 
-上表不是写死在代码里的，而是 `data/fabrimechanus/fabrimechanus/mob_gear/minecraft/` 下的 12 个文件。目录按**怪物来自哪个模组**分两层：
+上表不是写死在代码里的，而是 `data/fabrimechanus/fabrimechanus/mob_gear/minecraft/` 下的 15 个文件 —— **每种怪物一个文件**，文件名就是怪物 id，改某一种怪只动它自己那一个文件，不会连带其它怪。目录按**怪物来自哪个模组**分两层：
 
 ```
 data/<命名空间>/fabrimechanus/mob_gear/

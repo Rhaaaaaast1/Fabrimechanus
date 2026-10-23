@@ -3,7 +3,6 @@ package dev.rhaaaaaast1.fabrimechanus.tinkers;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
@@ -12,6 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import slimeknights.tconstruct.library.modifiers.hook.build.ConditionalStatModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.GeneralInteractionModifierHook;
 import slimeknights.tconstruct.library.tools.capability.PersistentDataCapability;
+import slimeknights.tconstruct.library.tools.item.IModifiable;
 import com.google.common.annotations.VisibleForTesting;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
@@ -35,22 +35,10 @@ public final class TinkersSpearAi {
     private TinkersSpearAi() {
     }
 
-    /**
-     * Raises the spear and starts the wind up. Mobs never call {@code Item#use}, so the active modifier that normally
-     * wakes up the use animation has to be set by hand; the vanilla item use duration then reports a spear pose.
-     */
-    public static boolean beginCharge(Mob mob) {
-        ItemStack stack = mob.getMainHandItem();
-        if (!isSpear(stack)) {
-            return false;
-        }
-        mob.startUsingItem(InteractionHand.MAIN_HAND);
-        return mob.isUsingItem();
-    }
-
     /** True when the stack is a modifiable tool that carries the throwing modifier (all Tinkers' javelins do). */
     public static boolean isSpear(ItemStack stack) {
-        if (stack.isEmpty()) {
+        // cheap identity check first: this runs for every held item of every mob, and building a ToolStack is not free
+        if (stack.isEmpty() || !(stack.getItem() instanceof IModifiable)) {
             return false;
         }
         ToolStack tool = ToolStack.from(stack);

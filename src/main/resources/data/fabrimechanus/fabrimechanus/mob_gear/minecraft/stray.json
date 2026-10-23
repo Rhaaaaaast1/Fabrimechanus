@@ -1,9 +1,13 @@
 {
   "priority": 0,
-  "mobs": [ "minecraft:skeleton", "minecraft:stray", "minecraft:bogged" ],
+  "mobs": [
+    "minecraft:stray"
+  ],
   "mainhand": {
     "chance": 1,
-    "items": [ { "item": "tconstruct:longbow", "weight": 1 } ]
+    "items": [
+      { "item": "tconstruct:longbow", "weight": 1 }
+    ]
   },
   "armor": {
     "chance": 0.1,

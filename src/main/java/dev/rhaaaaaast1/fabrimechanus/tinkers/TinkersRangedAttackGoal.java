@@ -59,6 +59,8 @@ public class TinkersRangedAttackGoal extends Goal {
     private static final double SPEAR_HOLD_SQR = 36.0D;
     /** ticks the spear is raised before it leaves the hand, the trident pose is the winding up animation */
     private static final int SPEAR_CHARGE_TICKS = 12;
+    /** ticks the current charge needs, cached so the stat lookup does not run every tick while using */
+    private int chargeTicks = 20;
 
     public TinkersRangedAttackGoal(Mob mob, Ranged mode, double speedModifier, int attackIntervalMin, float attackRadius) {
         this.mob = mob;
@@ -69,9 +71,6 @@ public class TinkersRangedAttackGoal extends Goal {
         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
-    public Ranged mode() {
-        return mode;
-    }
 
     @Override
     public boolean canUse() {
@@ -130,7 +129,7 @@ public class TinkersRangedAttackGoal extends Goal {
 
             if (mob.isUsingItem()) {
                 // the raised spear is the winding up animation, release it once the charge is done
-                if (mob.getTicksUsingItem() >= SPEAR_CHARGE_TICKS && canSee) {
+                if (mob.getTicksUsingItem() >= chargeTicks && canSee) {
                     snapAim(target);
                     mob.releaseUsingItem();
                     if (TinkersSpearAi.throwSpear(mob, target)) {
@@ -145,6 +144,7 @@ public class TinkersRangedAttackGoal extends Goal {
             }
             if (seeTime >= 10 && canSee && distSqr <= attackRadiusSqr) {
                 snapAim(target);
+                chargeTicks = SPEAR_CHARGE_TICKS;
                 mob.startUsingItem(InteractionHand.MAIN_HAND);
             }
             return;
@@ -183,27 +183,13 @@ public class TinkersRangedAttackGoal extends Goal {
         if (mob.isUsingItem()) {
             if (!canSee && seeTime < -60) {
                 mob.stopUsingItem();
-            } else if (canSee && mob.getTicksUsingItem() >= requiredDrawTicks()) {
+            } else if (canSee && mob.getTicksUsingItem() >= chargeTicks) {
                 snapAim(target);
                 releaseAndFire();
             }
             return;
         }
 
-        if (mode == Ranged.SPEAR) {
-            if (attackTime > 0) {
-                attackTime--;
-                return;
-            }
-            if (seeTime < -60 || !canSee || distSqr > attackRadiusSqr) {
-                return;
-            }
-            snapAim(target);
-            if (TinkersSpearAi.throwSpear(mob, target)) {
-                attackTime = attackIntervalMin + mob.getRandom().nextInt(10);
-            }
-            return;
-        }
 
         if (attackTime > 0) {
             attackTime--;
@@ -224,6 +210,7 @@ public class TinkersRangedAttackGoal extends Goal {
             return;
         }
         snapAim(target);
+        chargeTicks = requiredDrawTicks();
         mob.startUsingItem(InteractionHand.MAIN_HAND);
     }
 

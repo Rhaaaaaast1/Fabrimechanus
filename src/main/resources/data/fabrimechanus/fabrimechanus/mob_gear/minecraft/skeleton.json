@@ -1,0 +1,19 @@
+{
+  "priority": 0,
+  "mobs": [
+    "minecraft:skeleton"
+  ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      { "item": "tconstruct:longbow", "weight": 1 }
+    ]
+  },
+  "armor": {
+    "chance": 0.1,
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
+  }
+}
