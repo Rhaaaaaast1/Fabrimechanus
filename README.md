@@ -201,3 +201,91 @@ data/<命名空间>/fabrimechanus/mob_gear/
 - **拾取行为不变**：只在生成时处理一次，玩家丢出的物品仍可被怪物捡起；已经处理过的怪物从存档读回时不会重新随机（`fabrimechanus:tinkers_gear` 标记），但仍会重新挂上远程 AI（原版不保存 AI goal）。
 - **远程 AI**：`TinkersRangedAttackGoal` 复刻原版 `RangedBowAttackGoal` 的移动与侧移逻辑，但按 `ModifiableLauncherItem` 判定；弓按工具的 `DRAW_SPEED` 蓄力后释放，弩则先上膛再调用 `ModifiableCrossbowItem#fireCrossbow` 开火。箭矢由 `LivingGetProjectileEvent` 提供，只对非玩家发射器生效。
 - **怪物投矛**：手持匠魂矛（`tconstruct:javelin`，带 `throwing` 词条）的怪物会被自动挂上投矛 AI，照搬原版溺尸扔三叉戟的做法 —— 生成一个 `ThrownTool` 并朝目标抛出，但**不扣耐久、不从手里拿走**，所以怪物的矛是无限的；矛落地后不可拾取、约一分钟消失，不会变成掉落物。投掷前会像原版三叉戟那样把矛举起来蓄力 12 tick（`UseAnim.SPEAR` 姿势），蓄满才脱手；弹道用抛物线反解（同样的 0.05 重力，取低弧解）算出俯仰角，速度夹在 1.2~3.0 之间，避免高 `VELOCITY` 材料把矛直接打进实体内部。持矛的怪物**只投矛、不近战**：投矛 AI 常驻并接管移动，白天停在约 6 格外持续投掷 —— 想让它近战，把 `javelin` 从主手池里去掉即可。
+
+## KubeJS 工具 API（可选）
+
+模组现在附带一组 KubeJS 2101 绑定，KubeJS 未安装时完全跳过（mixin 内部有 `ModList` 保护，已实测无 KubeJS 也能启动）。插件不是通过 `META-INF/services` 注册，而是通过：
+
+```text
+src/main/resources/kubejs.plugins.txt
+  -> dev.rhaaaaaast1.fabrimechanus.kubejs.FabrimechanusKubeJSPlugin
+```
+
+### ItemStackAPI（server / startup 脚本）
+
+```js
+let stack = ItemStackAPI.of('minecraft:paper', { foo: 1 }, 1)
+let data = ItemStackAPI.get(stack)        // 普通 JS 对象，只含 custom_data
+data.bar = 2
+ItemStackAPI.set(stack, data)
+
+ItemStackAPI.merge(stack, { baz: 3 })
+ItemStackAPI.remove(stack, ['foo'])
+ItemStackAPI.has(stack, 'bar')            // true
+ItemStackAPI.copyKeys(from, to, ['bar'])
+ItemStackAPI.copyCustomData(from, to)     // 只继承 minecraft:custom_data
+ItemStackAPI.copyComponents(from, to)     // 继承全部非默认组件/NBT
+ItemStackAPI.matches(stack, { bar: 2 })   // Context 由 KJS 自动注入
+```
+
+`copyComponents` 会连附魔、伤害、名字等组件一起复制；目标物品必须是能接受这些组件的物品。  
+如果只需要匠魂的 `Material` 或自己的 NBT，优先用 `copyCustomData` / `copyKeys`，避免把不相关组件带过去。
+
+### 事件
+
+```js
+ServerEvents.recipeOutput(event => {
+    // event.recipeId / event.recipeType / event.inputs / event.output
+    event.output = Item.of('minecraft:gold_ingot', { custom_data: { from_recipe: 1 } })
+})
+
+BlockEvents.blockEntitySlotChanged(event => {
+    // event.level / pos / block / blockEntity / slot / oldStack / newStack
+    event.setStack(Item.of('minecraft:diamond'))
+})
+
+PlayerEvents.rightClickBlockPre(event => {
+    // event.player / hand / block / blockEntity / slots / item / hit
+    if (event.block.id === 'minecraft:chest') event.cancel()
+})
+```
+
+`recipeOutput` 目前挂在原版 `ShapedRecipe`、`ShapelessRecipe`、`AbstractCookingRecipe`、`SingleItemRecipe`、`SmithingTransformRecipe`、`SmithingTrimRecipe` 的 `assemble` 返回处；模组自有 `Recipe` 实现、Create `ProcessingRecipe` 等不经过这些方法的机器不会自动触发。`BlockEntityAPI` 支持 `Container` / `WorldlyContainer`，并回退到 `IItemHandler`；槽位事件通过 `BlockEntity#setChanged` 比较快照，第一次 `setChanged` 只建立基线。
+
+### 测试结果（开发服务器，KubeJS 2101.7.2）
+
+- `ItemStackAPI` 的 `of/get/merge/has` 实际执行通过。
+- 直接调用 `minecraft:paper` 的 `assemble` 触发了 `recipeOutput`，产物被改成金锭。
+- 在测试箱子里写槽位触发了 `blockEntitySlotChanged`，旧/新物品正确。
+- 移除 KubeJS/Rhino 后服务器仍能正常启动。
+
+### 匠魂浇筑半成品示例
+
+仓库里的 `kubejs/` 是可直接复制到实例的示例：
+
+```text
+kubejs/startup_scripts/unfinished_parts.js
+kubejs/server_scripts/unfinished_parts.js
+```
+
+流程：
+
+```text
+匠魂浇筑台产出真部件
+  -> Fabrimechanus 的槽位事件读取 Material
+  -> 替换成 kubejs:unfinished_<part> + custom_data.Material
+  -> Create 序列（逐材料过渡件）
+  -> tconstruct:<part> + custom_data.Material
+```
+
+`MATERIALS` 是显式表；当前依赖 KubeJS Create。浇筑台输出替换依赖
+`MantleBlockEntitySetChangedFastMixin`（TConstruct 的 `InventoryBlockEntity` 走
+`setChangedFast`，不是原版 `setChanged`）。
+
+限制：
+
+- KJS 读不到 TConstruct 的运行时 `material_fluid`，所以材料需列入 `MATERIALS`。
+- Create 的 `advance()` 会重置过渡件，只保留写进过渡件的组件；当前只保证 `Material`。
+- 只 gate 浇筑台（`seared_table` / `scorched_table`），不包含浇筑盆。
+
+

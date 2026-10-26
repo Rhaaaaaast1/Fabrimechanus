@@ -9,7 +9,16 @@
     "PiglinCrossbowMixin",
     "PillagerPoseMixin",
     "PiglinPoseMixin",
-    "RangedCrossbowAttackGoalMixin"
+    "RangedCrossbowAttackGoalMixin",
+    "RecipeManagerIndexMixin",
+    "ShapedRecipeOutputMixin",
+    "ShapelessRecipeOutputMixin",
+    "AbstractCookingRecipeOutputMixin",
+    "SingleItemRecipeOutputMixin",
+    "SmithingTransformRecipeOutputMixin",
+    "SmithingTrimRecipeOutputMixin",
+    "BlockEntitySetChangedMixin",
+    "MantleBlockEntitySetChangedFastMixin"
   ],
   "client": [
   ],
