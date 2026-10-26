@@ -1,0 +1,16 @@
+{
+  "tconstruct:tool_binding": "kubejs:unfinished_tool_binding",
+  "tconstruct:tool_handle": "kubejs:unfinished_tool_handle",
+  "tconstruct:tough_binding": "kubejs:unfinished_tough_binding",
+  "tconstruct:tough_handle": "kubejs:unfinished_tough_handle",
+  "tconstruct:pick_head": "kubejs:unfinished_pick_head",
+  "tconstruct:hammer_head": "kubejs:unfinished_hammer_head",
+  "tconstruct:small_axe_head": "kubejs:unfinished_small_axe_head",
+  "tconstruct:broad_axe_head": "kubejs:unfinished_broad_axe_head",
+  "tconstruct:small_blade": "kubejs:unfinished_small_blade",
+  "tconstruct:broad_blade": "kubejs:unfinished_broad_blade",
+  "tconstruct:large_plate": "kubejs:unfinished_large_plate",
+  "tconstruct:bow_limb": "kubejs:unfinished_bow_limb",
+  "tconstruct:bow_grip": "kubejs:unfinished_bow_grip",
+  "tconstruct:repair_kit": "kubejs:unfinished_repair_kit"
+}

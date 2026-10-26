@@ -18,7 +18,8 @@
     "SmithingTransformRecipeOutputMixin",
     "SmithingTrimRecipeOutputMixin",
     "BlockEntitySetChangedMixin",
-    "MantleBlockEntitySetChangedFastMixin"
+    "MantleBlockEntitySetChangedFastMixin",
+    "MaterialCastingOutputMixin"
   ],
   "client": [
   ],

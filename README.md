@@ -282,6 +282,14 @@ kubejs/server_scripts/unfinished_parts.js
 `MantleBlockEntitySetChangedFastMixin`（TConstruct 的 `InventoryBlockEntity` 走
 `setChangedFast`，不是原版 `setChanged`）。
 
+另外还有一个更靠前的 Java 钩子 `MaterialCastingOutputMixin`：它在
+`MaterialCastingRecipe#assemble` 的 `RETURN` 处直接把真部件替换成未完成件，
+因此漏斗/注液器看到的就是未完成件，不依赖输出槽时序。
+
+映射默认按 `kubejs:unfinished_<part>` 约定；如果要使用自定义命名空间，复制
+`examples/fabrimechanus-unfinished-parts.json` 到实例的
+`config/fabrimechanus-unfinished-parts.json` 并修改。
+
 限制：
 
 - KJS 读不到 TConstruct 的运行时 `material_fluid`，所以材料需列入 `MATERIALS`。
