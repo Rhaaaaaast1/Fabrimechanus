@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "waterlogged=false": { "model": "fabrimechanus:block/primitive/small_pebble" },
+    "waterlogged=true":  { "model": "fabrimechanus:block/primitive/small_pebble" }
+  }
+}

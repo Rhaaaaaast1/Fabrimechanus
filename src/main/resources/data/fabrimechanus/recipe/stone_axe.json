@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PC",
+    "S "
+  ],
+  "key": {
+    "P": { "item": "fabrimechanus:small_pebble" },
+    "C": { "item": "fabrimechanus:plant_cord" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "id": "fabrimechanus:stone_axe",
+    "count": 1
+  }
+}

@@ -3,5 +3,18 @@
   "fabrimechanus.configuration.material_tier_weights.tier1": "1 级材料权重",
   "fabrimechanus.configuration.material_tier_weights.tier2": "2 级材料权重",
   "fabrimechanus.configuration.material_tier_weights.tier3": "3 级材料权重",
-  "fabrimechanus.configuration.material_tier_weights.tier4": "4 级材料权重"
+  "fabrimechanus.configuration.material_tier_weights.tier4": "4 级材料权重",
+  "itemGroup.fabrimechanus.primitive": "原始生存",
+  "item.fabrimechanus.small_pebble": "石子",
+  "item.fabrimechanus.small_flint": "燧石石子",
+  "item.fabrimechanus.stone_shard": "石片",
+  "item.fabrimechanus.flint_shard": "燧石碎片",
+  "item.fabrimechanus.plant_fiber": "植物纤维",
+  "item.fabrimechanus.plant_cord": "植物绳",
+  "item.fabrimechanus.stone_axe": "简陋的石斧",
+  "item.fabrimechanus.flint_axe": "简陋的燧石斧",
+  "block.fabrimechanus.small_pebble": "石子",
+  "block.fabrimechanus.small_flint": "燧石石子",
+  "message.fabrimechanus.no_tree_punching": "你疯了?为什么要空手打树?",
+  "tooltip.fabrimechanus.disabled": "已禁用"
 }

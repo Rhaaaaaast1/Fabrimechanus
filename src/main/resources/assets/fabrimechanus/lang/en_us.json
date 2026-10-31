@@ -3,5 +3,18 @@
   "fabrimechanus.configuration.material_tier_weights.tier1": "Tier 1 material weight",
   "fabrimechanus.configuration.material_tier_weights.tier2": "Tier 2 material weight",
   "fabrimechanus.configuration.material_tier_weights.tier3": "Tier 3 material weight",
-  "fabrimechanus.configuration.material_tier_weights.tier4": "Tier 4 material weight"
+  "fabrimechanus.configuration.material_tier_weights.tier4": "Tier 4 material weight",
+  "itemGroup.fabrimechanus.primitive": "Primitive Survival",
+  "item.fabrimechanus.small_pebble": "Pebble",
+  "item.fabrimechanus.small_flint": "Flint Pebble",
+  "item.fabrimechanus.stone_shard": "Stone Shard",
+  "item.fabrimechanus.flint_shard": "Flint Shard",
+  "item.fabrimechanus.plant_fiber": "Plant Fiber",
+  "item.fabrimechanus.plant_cord": "Plant Cord",
+  "item.fabrimechanus.stone_axe": "Crude Stone Axe",
+  "item.fabrimechanus.flint_axe": "Crude Flint Axe",
+  "block.fabrimechanus.small_pebble": "Pebble",
+  "block.fabrimechanus.small_flint": "Flint Pebble",
+  "message.fabrimechanus.no_tree_punching": "Are you crazy? Why punch a tree?",
+  "tooltip.fabrimechanus.disabled": "Disabled"
 }

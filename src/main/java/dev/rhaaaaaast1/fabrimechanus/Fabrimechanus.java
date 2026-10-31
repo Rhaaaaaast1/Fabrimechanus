@@ -1,6 +1,11 @@
 package dev.rhaaaaaast1.fabrimechanus;
 
 import com.mojang.logging.LogUtils;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveEvents;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveFeatures;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveLoot;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveRecipes;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveRegistry;
 import dev.rhaaaaaast1.fabrimechanus.tinkers.TinkersIntegration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -20,7 +25,12 @@ public class Fabrimechanus {
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public Fabrimechanus(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
+        // Register primitive items/blocks and the setup listener
+        PrimitiveRegistry.register(modEventBus);
+        PrimitiveFeatures.register(modEventBus);
+        PrimitiveLoot.register(modEventBus);
+        PrimitiveEvents.register();
+        PrimitiveRecipes.register();
         modEventBus.addListener(this::commonSetup);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us

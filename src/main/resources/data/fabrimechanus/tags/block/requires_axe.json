@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:logs",
+    "#minecraft:planks",
+    "#minecraft:wooden_stairs",
+    "#minecraft:wooden_slabs",
+    "#minecraft:wooden_fences",
+    "#minecraft:fence_gates",
+    "#minecraft:wooden_doors",
+    "#minecraft:wooden_trapdoors",
+    "#minecraft:standing_signs",
+    "#minecraft:wall_signs",
+    "#minecraft:all_hanging_signs",
+    "#minecraft:buttons",
+    "#minecraft:pressure_plates"
+  ]
+}

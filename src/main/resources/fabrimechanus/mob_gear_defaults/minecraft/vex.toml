@@ -1,0 +1,13 @@
+priority = 0
+mobs = ["minecraft:vex"]
+
+[mainhand]
+chance = 1.0
+
+[[mainhand.items]]
+item = "tconstruct:dagger"
+weight = 1
+
+[[mainhand.items]]
+item = "tconstruct:sword"
+weight = 1

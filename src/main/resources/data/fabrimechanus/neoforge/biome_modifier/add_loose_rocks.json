@@ -1,0 +1,9 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "fabrimechanus:small_pebble",
+    "fabrimechanus:small_flint"
+  ],
+  "step": "top_layer_modification"
+}

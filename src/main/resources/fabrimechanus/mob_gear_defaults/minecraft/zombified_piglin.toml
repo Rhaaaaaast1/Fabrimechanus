@@ -1,0 +1,20 @@
+priority = 0
+mobs = ["minecraft:zombified_piglin"]
+
+[mainhand]
+chance = 1.0
+
+[[mainhand.items]]
+item = "tconstruct:sword"
+weight = 1
+
+[armor]
+chance = 0.08
+
+[[armor.sets]]
+set = "travelers"
+weight = 3
+
+[[armor.sets]]
+set = "plate"
+weight = 1

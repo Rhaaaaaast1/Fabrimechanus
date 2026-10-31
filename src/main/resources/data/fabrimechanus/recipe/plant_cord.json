@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "fabrimechanus:plant_fiber" },
+    { "item": "fabrimechanus:plant_fiber" },
+    { "item": "fabrimechanus:plant_fiber" }
+  ],
+  "result": {
+    "id": "fabrimechanus:plant_cord",
+    "count": 1
+  }
+}

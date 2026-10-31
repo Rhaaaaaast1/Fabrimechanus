@@ -1,0 +1,9 @@
+priority = 0
+mobs = ["minecraft:pillager"]
+
+[mainhand]
+chance = 1.0
+
+[[mainhand.items]]
+item = "tconstruct:crossbow"
+weight = 1

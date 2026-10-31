@@ -1,0 +1,9 @@
+priority = 0
+mobs = ["minecraft:illusioner"]
+
+[mainhand]
+chance = 1.0
+
+[[mainhand.items]]
+item = "tconstruct:longbow"
+weight = 1
