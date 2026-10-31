@@ -5,7 +5,7 @@
 
 - GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
 - License: MIT
-- Version: **1.2.0**
+- Version: **1.2.1**
 - Minecraft: **1.21.1**
 - Loader: **NeoForge 21.1.x**
 - Optional: **Tinkers' Construct 3.13.x**, **Mantle**
@@ -67,11 +67,11 @@ The action plays stone break particles and the item-break sound. The knapping bl
 
 ### Plant fiber / 植物纤维
 
-Hold **right-click** with a stone shard or flint shard on short grass, fern, tall grass, or large fern. After the charge completes, the plant is cut and drops 1–2 `fabrimechanus:plant_fiber`.
+**Right-click with an empty hand** on short grass, fern, tall grass, or large fern. The plant is pulled out by the roots and drops 1–2 `fabrimechanus:plant_fiber`.
 
 Three plant fiber craft one `fabrimechanus:plant_cord`.
 
-用石片或燧石碎片对短草、蕨、高草、大型蕨**按住右键蓄力**；蓄力完成后割下植物，掉落 1–2 个 `fabrimechanus:plant_fiber`。
+**空手右键**短草、蕨、高草、大型蕨，会把草连根拔起，掉落 1–2 个 `fabrimechanus:plant_fiber`。
 
 3 个植物纤维合成 1 个 `fabrimechanus:plant_cord`。
 
@@ -305,7 +305,7 @@ Install on both client and server.
 Output:
 
 ```text
-build/libs/fabrimechanus-1.2.0.jar
+build/libs/fabrimechanus-1.2.1.jar
 ```
 
 ---

@@ -1,9 +1,19 @@
 {
   "feature": "fabrimechanus:small_flint",
   "placement": [
-    { "type": "minecraft:count", "count": 4 },
-    { "type": "minecraft:in_square" },
-    { "type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG" },
-    { "type": "minecraft:biome" }
+    {
+      "type": "minecraft:count",
+      "count": 3
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "WORLD_SURFACE"
+    },
+    {
+      "type": "minecraft:biome"
+    }
   ]
 }

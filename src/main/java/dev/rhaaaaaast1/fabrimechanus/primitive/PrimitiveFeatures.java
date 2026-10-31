@@ -5,7 +5,6 @@ import dev.rhaaaaaast1.fabrimechanus.tinkers.FabriTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -50,7 +49,6 @@ public final class PrimitiveFeatures {
         public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
             WorldGenLevel level = context.level();
             BlockPos pos = context.origin();
-            RandomSource random = context.random();
 
             if (!level.canSeeSky(pos)) {
                 return false;
@@ -64,10 +62,6 @@ public final class PrimitiveFeatures {
             BlockState current = level.getBlockState(pos);
             boolean water = current.is(Blocks.WATER);
             if (!current.isAir() && !water) {
-                return false;
-            }
-
-            if (random.nextFloat() > 0.55F) {
                 return false;
             }
 
