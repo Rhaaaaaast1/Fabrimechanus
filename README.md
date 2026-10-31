@@ -1,78 +1,104 @@
-# Fabrimechanus
+# Tinkers' AI — 1.21.1 / NeoForge
 
-把 **Tinkers' Construct（匠魂）** 接入原版怪物装备系统。
+**Monster equipment and ranged combat AI for Tinkers' Construct.**  
+**为匠魂（Tinkers' Construct）添加怪物装备与远程战斗 AI。**
 
-- 怪物会使用匠魂弓进行远程攻击（原版 AI 不认识匠魂发射器）。
-- 怪物生成时携带匠魂工具/防具，材料按等级概率随机。
-- 剥离指定的原版工具/防具刷新，但不影响捡取，也不改动匠魂自带数据。
-- 匠魂是 **可选** 依赖：未安装时模组正常加载，集成代码完全跳过。
+- GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
+- License: MIT
+- Version: **1.1.1**
+- Minecraft: **1.21.1**
+- Loader: **NeoForge 21.1.x**
+- Optional dependencies: **Tinkers' Construct 3.13.x**, **Mantle**
 
-本仓库是 **Minecraft 1.21.1 + NeoForge 21.1.264** 版本（依赖非官方移植匠魂 3.13.3）。
-1.20.1 + Forge 版本在独立仓库：
-[Rhaaaaaast1/TinkersAdditions](https://github.com/Rhaaaaaast1/TinkersAdditions)。
+> The KubeJS utility layer has been split into the separate **AKubejsPlugin** mod.
+> KubeJS 工具层已拆分到独立模组 **AKubejsPlugin**，本模组不包含 KubeJS 代码。
 
-> KubeJS 工具层已经拆分到独立模组 **AKubejsPlugin**，本模组不再包含 KubeJS 代码。
+---
 
-## 构建
+## Overview / 概述
 
-```bash
-./gradlew build
-```
+Tinkers' AI gives newly spawned monsters Tinkers' Construct equipment and teaches them to use Tinkers' bows, crossbows, and throwing weapons. Vanilla mob gear is removed only from the six equipment slots, never from loot tables.
 
-Gradle wrapper 使用腾讯镜像：
+Tinkers' AI 让新生成的怪物装备匠魂工具与护甲，并让它们学会使用匠魂的弓、弩和投掷武器。原版装备只会从六个装备槽中移除，不会从战利品表中删除。
 
-```text
-https://mirrors.cloud.tencent.com/gradle/gradle-8.8-bin.zip
-```
+---
 
-构建前需要把匠魂移植版与 Mantle 的 jar 放进 `libs/`（jar 不进 git）：
+## Features / 功能
 
-- `libs/TinkersConstruct-1.21.1-3.13.3.jar`
-- `libs/Mantle-1.21.1-1.13.1.jar`
+### 1. Monster equipment / 怪物装备
 
-两者分别来自：
+**English**
 
-- <https://github.com/zhuchuovo/TinkersConstruct-1.21.1>
-- <https://github.com/zhuchuovo/Mantle-1.21.1>
+- Runs when a mob joins the level, after vanilla and Tinkers' Construct have rolled their own equipment.
+- Removes only the vanilla tools, weapons, and armor listed in `#fabrimechanus:stripped_monster_gear` from the six equipment slots.
+- Rolls Tinkers' gear from config rules and fills **empty slots only**, so Tinkers' own mob equipment is preserved.
+- Rolls the material of **each tool part independently**.
+- The bundled rules exclude ancient tools (`#tconstruct:modifiable/ancient`); a config file can add them intentionally.
+- Supports any item ID in the rules, not only Tinkers' items; unknown IDs are skipped with a warning.
 
-`build.gradle` 使用 `compileOnly files(...)`，因此产物不会打包匠魂；运行时由玩家自行安装。
+**中文**
 
-## 实现结构
+- 在怪物进入世界时执行，此时原版与匠魂都已经完成各自装备的随机。
+- 只从六个装备槽中移除 `#fabrimechanus:stripped_monster_gear` 里列出的原版工具、武器和护甲。
+- 按配置文件随机匠魂装备，并且**只填充空槽**，因此匠魂自带的怪物装备会被保留。
+- 每件工具的各部件材料**独立随机**。
+- 内置规则不包含远古工具（`#tconstruct:modifiable/ancient`）；配置文件可以有意加入它们。
+- 规则里可以写任意物品 ID，不限于匠魂物品；未知 ID 会跳过并在日志中警告。
 
-`dev.rhaaaaaast1.fabrimechanus.tinkers` 包内的类只在检测到 `tconstruct` 时被加载
-（`ModList.get().isLoaded("tconstruct")`），避免未安装匠魂时出现 `NoClassDefFoundError`。
+### 2. Ranged combat AI / 远程战斗 AI
 
-| 类 | 职责 |
-| --- | --- |
-| `TinkersIntegration` | 入口：检测匠魂、注册监听器、清理材料缓存 |
-| `RandomTierMaterials` | 按等级概率为每个部件独立选材 |
-| `ToolFactory` | 用选中的材料组装匠魂工具/防具 |
-| `VanillaGear` | 判断装备是否属于需要剥离的原版物品 |
-| `MobGearRule` | 配置规则：怪物、主手/副手权重、护甲概率与套装 |
-| `MobGearRegistry` | 规则查找表，按 `priority` 取第一条匹配 |
-| `MobGearConfig` | 读取 `config/fabrimechanus/mob_gear/**/*.json`，首次运行生成每个怪物的默认文件 |
-| `MobGearSpawnHandler` | 生成时剥离原版装备、发放匠魂装备、挂载远程 AI |
-| `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
-| `TinkersRangedAttackGoal` | 识别匠魂弓的远程攻击 AI |
-| `TinkersCrossbowAi` | 判断怪物是否手持匠魂弓并发射已上膛弩箭 |
-| `TinkersSpearAi` | 让手持匠魂矛的怪物像三叉戟一样蓄力投掷 |
+**English**
 
-## 配置
+- **Bows:** the mob charges the bow, then releases it; Tinkers' Construct fires the arrow.
+- **Crossbows:** the mob loads the crossbow first, then fires it through Tinkers' Construct.
+- **Throwing weapons** (`javelin` and other tools with the `throwing` modifier): the mob raises and throws a `ThrownTool`, similar to a trident. The weapon is **not consumed**, does not lose durability, and the projectile cannot be picked up.
+- Mobs holding a Tinkers' launcher receive **infinite arrows** when they shoot; player ammunition is unaffected.
+- The AI is attached when the mob joins the world; items picked up later do not add a new goal.
 
-### 怪物装备配置
+**中文**
 
-首次进入游戏后会自动生成：
+- **弓**：怪物拉弓，蓄满后释放，由匠魂负责发射箭。
+- **弩**：怪物先上膛，再通过匠魂发射。
+- **投掷武器**（`javelin` 以及其他带 `throwing` 词条的工具）：怪物举起并投出 `ThrownTool`，类似三叉戟。武器**不会被消耗**，不扣耐久，投出的实体不可拾取。
+- 手持匠魂发射器的怪物射击时会获得**无限箭**；玩家的箭矢不受影响。
+- AI 在怪物进入世界时挂载；之后捡起物品不会新增 AI。
+
+### 3. Config-driven rules / 配置文件规则
+
+**English**
+
+- Define which mobs receive which weapons, offhand items, and armor sets.
+- Use entity IDs or entity tags.
+- Add compatibility rules for modded mobs without writing Java.
+- Rules are reloaded with `/reload` and only affect mobs spawned afterwards.
+
+**中文**
+
+- 可以定义哪些怪物获得哪些主手武器、副手物品和护甲套装。
+- 支持实体 ID 或实体标签。
+- 不需要写 Java 就能为模组怪物添加兼容规则。
+- 规则通过 `/reload` 重载，只影响之后生成的怪物。
+
+---
+
+## Config / 配置
+
+### Mob gear / 怪物装备
+
+On first launch the mod creates:
+
+首次启动会自动生成：
 
 ```text
 config/fabrimechanus/mob_gear/
 ├── README.txt
-├── minecraft/          原版怪物，每个怪物一个 json
-└── compat/             其他模组的怪物
+├── minecraft/          Vanilla mobs, one JSON per mob / 原版怪物，每个怪物一个 JSON
+└── compat/             Modded mobs / 其他模组的怪物
 ```
 
-默认会写入 15 个原版怪物配置（skeleton、zombie、piglin、pillager 等）。已有文件不会被覆盖，改完可用 `/reload` 重新读取。
+15 vanilla mobs are generated by default: skeleton, zombie, piglin, pillager, etc. Existing files are never overwritten; use `/reload` after editing.
 
-文件格式：
+默认生成 15 个原版怪物配置；已有文件不会被覆盖，修改后用 `/reload` 重新读取。
 
 ```json
 {
@@ -87,7 +113,7 @@ config/fabrimechanus/mob_gear/
   },
   "offhand": {
     "chance": 0.1,
-    "items": [ { "item": "tconstruct:shield", "weight": 1 } ]
+    "items": [ { "item": "tconstruct:plate_shield", "weight": 1 } ]
   },
   "armor": {
     "chance": 0.1,
@@ -99,24 +125,42 @@ config/fabrimechanus/mob_gear/
 }
 ```
 
-- `priority`：越高越优先，第一条匹配的规则生效
-- `mobs`：实体 id，或 `#` 开头的实体标签
-- `chance`：0~1，是否填充该槽位/是否穿整套护甲
-- `weight`：列表内的相对权重
-- `armor.set`：`plate`、`travelers` 或 `none`
+| Field / 字段 | Description / 说明 |
+|---|---|
+| `priority` | Higher wins; first matching rule is used. 越高越优先，第一条匹配的规则生效。 |
+| `mobs` | Entity ID or `#` entity tag. 实体 ID 或 `#` 实体标签。 |
+| `chance` | 0–1 chance to fill the slot or wear the armor set. 0~1，是否填充槽位/穿整套护甲。 |
+| `weight` | Relative weight inside the list. 列表内的相对权重。 |
+| `armor.set` | `plate`, `travelers`, or `none`. |
 
-### 材料等级权重
+### Material tiers / 材料等级
 
-材料等级权重在 `config/fabrimechanus-common.toml` 的
-`materialTierWeights` 下调整；权重是相对值，不要求和为 100。
+Material tier weights are in `config/fabrimechanus-common.toml`:
 
-## 关于箱子战利品
+材料等级权重位于 `config/fabrimechanus-common.toml`：
 
-本模组**不修改原版箱子战利品表**，也不会从箱子、地牢、要塞等战利品中删除原版工具/护甲。
+```toml
+[materialTierWeights]
+tier0 = 25.0
+tier1 = 25.0
+tier2 = 30.0
+tier3 = 17.0
+tier4 = 3.0
+```
 
-它只做一件事：
+Weights are relative and do not need to add up to 100.
 
-> 在新生成的怪物已经获得原版装备之后，把这些怪物**身上装备槽**里的原版工具/护甲清空。
+权重是相对值，不需要加起来等于 100。
+
+---
+
+## Loot tables / 战利品表
+
+**English:** This mod does **not** edit vanilla or Tinkers' loot tables. Chest, dungeon, stronghold, shipwreck, and Nether fortress loot is untouched. It only clears vanilla equipment from newly spawned monsters' equipment slots.
+
+**中文：** 本模组**不修改**原版或匠魂的战利品表。箱子、地牢、要塞、沉船、下界要塞的战利品都不受影响。它只会清空新生成怪物装备槽里的原版装备。
+
+The strip scope is controlled by:
 
 清空范围由物品标签控制：
 
@@ -124,19 +168,48 @@ config/fabrimechanus/mob_gear/
 fabrimechanus:stripped_monster_gear
 ```
 
-所以：
+---
 
-- 箱子里的原版工具/护甲：不受影响
-- 怪物手里的原版武器：会被清空
-- 怪物身上的原版防具：会被清空
-- 匠魂自己的怪物装备表：不受影响
-- 玩家已经拿到的装备：不受影响
+## Build / 构建
 
-## Gradle 警告
+Requires **JDK 21**:
 
-`gradle.properties` 已关闭实验性/孵化中的 configuration cache 警告：
+需要 **JDK 21**：
 
-```properties
-org.gradle.configuration-cache=false
-org.gradle.warning.mode=none
+```bash
+./gradlew build
 ```
+
+Gradle wrapper uses the Tencent mirror:
+
+Gradle wrapper 使用腾讯镜像：
+
+```text
+https://mirrors.cloud.tencent.com/gradle/gradle-8.8-bin.zip
+```
+
+Put these into `libs/` before building (jars are not committed):
+
+构建前把以下 jar 放入 `libs/`（jar 不进 git）：
+
+- `libs/TinkersConstruct-1.21.1-3.13.3.jar`
+- `libs/Mantle-1.21.1-1.13.1.jar`
+
+The mod uses `compileOnly`; Tinkers' Construct is not bundled.
+
+模组使用 `compileOnly`，不会打包匠魂。
+
+Output / 输出：
+
+```text
+build/libs/fabrimechanus-1.1.1.jar
+```
+
+---
+
+## Compatibility / 兼容性
+
+- Tinkers' Construct / Mantle are optional. 匠魂/Mantle 是可选依赖。
+- Only newly spawned mobs are affected. 只影响新生成的怪物。
+- Install on both client and server. 客户端与服务端都需要安装。
+- Unofficial addon; not affiliated with the Tinkers' Construct team. 非官方附属模组。
