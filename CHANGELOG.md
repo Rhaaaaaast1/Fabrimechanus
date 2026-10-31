@@ -71,8 +71,8 @@
 | Item | Value |
 |---|---|
 | Jar | `fabrimechanus-1.2.0.jar` |
-| Size | 122,402 bytes |
-| SHA-256 | `E280E6C829F2C7A6ADDD513CB70B4D373E9731FF0C55A02722F48E382E6AF832` |
+| Size | 122,429 bytes |
+| SHA-256 | `FB89D742CEC2E7AFF592455AA41BF95E8E2C73F013B4130E9A6ED83A321AF361` |
 | Loader | NeoForge 21.1.x |
 | Optional | Tinkers' Construct 3.13.x, Mantle |
 
