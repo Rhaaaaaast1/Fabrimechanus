@@ -10,6 +10,7 @@
 - World generation places them only on valid stone/gravel/sand supports, never floating, never on grass or leaves.
 - Right-click picks up a rock; left-click drops it; removing the support drops it as well.
 - Added `stone_shard` and `flint_shard`; sneak-right-click a rock on configured knapping blocks to convert it, with stone particles and the item-break sound.
+- Added optional JEI information pages for the rocks, shards, fiber, cord, and axes.
 - Added `plant_fiber` and `plant_cord`; charged shard use on grass cuts 1–2 fiber, and 3 fiber craft 1 cord.
 - Added `stone_axe` and `flint_axe` with durability 10 and wooden-axe-like speed.
 - Vanilla 4-plank recipes are removed; 1 log now crafts 2 planks, and a charged axe on stripped wood produces 2 planks.
@@ -21,6 +22,7 @@
 - 只生成在合法的石头/砂砾/沙子支撑上，不会悬空，也不会生成在草或树叶上。
 - 右键拾取，左键掉落；支撑方块被破坏时也会掉落。
 - 新增 `stone_shard` 和 `flint_shard`；潜行右键把石子按在可敲击方块上转换，带石头粒子和物品损坏音效。
+- 为石子、碎片、纤维、植物绳和斧子添加可选的 JEI 信息页。
 - 新增 `plant_fiber` 和 `plant_cord`；石片/碎片对草蓄力右键割出 1–2 个纤维，3 个纤维合成 1 个植物绳。
 - 新增耐久 10、速度接近木斧的 `stone_axe` 和 `flint_axe`。
 - 移除原版 4 木板配方；1 个原木合成 2 个木板，斧子对去皮木头蓄力右键也获得 2 个木板。
@@ -71,8 +73,8 @@
 | Item | Value |
 |---|---|
 | Jar | `fabrimechanus-1.2.0.jar` |
-| Size | 122,429 bytes |
-| SHA-256 | `FB89D742CEC2E7AFF592455AA41BF95E8E2C73F013B4130E9A6ED83A321AF361` |
+| Size | 124,183 bytes |
+| SHA-256 | `928D0E11D97C378A9C38D55EF40F55E3ABDDC29F6B1BD3B41B9009BB0D164BE6` |
 | Loader | NeoForge 21.1.x |
 | Optional | Tinkers' Construct 3.13.x, Mantle |
 

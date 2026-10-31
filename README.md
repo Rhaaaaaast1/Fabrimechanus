@@ -39,6 +39,7 @@ Tinkers' AI 在游戏里加入两层内容：
 - **Right-click** picks the rock up.
 - **Left-click** breaks it and drops the item.
 - If the supporting block is removed, the rock drops its item and disappears.
+- With JEI installed, the rocks, shards, fiber, cord, and axes have information pages.
 
 - `fabrimechanus:small_pebble` 和 `fabrimechanus:small_flint` 是可放置的地面方块。
 - 只生成在世界表面，且必须直接放在石质或砂砾类方块上；不会悬空，也不会生成在草或树叶上。
@@ -46,6 +47,7 @@ Tinkers' AI 在游戏里加入两层内容：
 - **右键**拾取。
 - **左键**破坏并掉落物品。
 - 底部支撑方块被破坏时，石子会直接掉落并消失。
+- 安装 JEI 时，石子、碎片、纤维、植物绳和斧子有信息页。
 
 ### Shards / 碎片
 

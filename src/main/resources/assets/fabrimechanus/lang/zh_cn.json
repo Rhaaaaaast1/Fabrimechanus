@@ -16,5 +16,13 @@
   "block.fabrimechanus.small_pebble": "石子",
   "block.fabrimechanus.small_flint": "燧石石子",
   "message.fabrimechanus.no_tree_punching": "你疯了?为什么要空手打树?",
-  "tooltip.fabrimechanus.disabled": "已禁用"
+  "tooltip.fabrimechanus.disabled": "已禁用",
+  "jei.fabrimechanus.small_pebble": "右键拾取。潜行右键按在石头上可敲出石片。",
+  "jei.fabrimechanus.small_flint": "右键拾取。潜行右键按在石头上可敲出燧石碎片。",
+  "jei.fabrimechanus.stone_shard": "对草按住右键可割出 1-2 个植物纤维。",
+  "jei.fabrimechanus.flint_shard": "对草按住右键可割出 1-2 个植物纤维。",
+  "jei.fabrimechanus.plant_fiber": "3 个植物纤维合成 1 个植物绳。",
+  "jei.fabrimechanus.plant_cord": "用于合成简陋的石斧和燧石斧。",
+  "jei.fabrimechanus.stone_axe": "耐久 10。对去皮木头蓄力右键可锯出 2 个木板。",
+  "jei.fabrimechanus.flint_axe": "耐久 10。对去皮木头蓄力右键可锯出 2 个木板。"
 }
