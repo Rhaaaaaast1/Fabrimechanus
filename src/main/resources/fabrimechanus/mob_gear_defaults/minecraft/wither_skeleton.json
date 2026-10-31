@@ -4,8 +4,8 @@
   "mainhand": {
     "chance": 1,
     "items": [
-      { "item": "tconstruct:sword", "weight": 1 },
-      { "item": "tconstruct:cleaver", "weight": 1 }
+      { "item": "tconstruct:sword", "weight": 1.5 },
+      { "item": "tconstruct:cleaver", "weight":0.5  }
     ]
   },
   "armor": {
