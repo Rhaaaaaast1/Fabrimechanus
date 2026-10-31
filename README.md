@@ -186,72 +186,109 @@ If Tinkers' Construct is absent, chest loot and recipes are left untouched.
 1.21.1 path:
 
 ```text
-config/fabrimechanus/mob_gear/
-├── common.toml
+config/fabrimechanus/
+├── common.json
 ├── minecraft/
-│   ├── skeleton.toml
-│   ├── zombie.toml
+│   ├── skeleton.json
+│   ├── zombie.json
 │   └── ... 15 files
 └── compat/          (empty by default)
 ```
 
-On first launch the mod creates `common.toml`, 15 vanilla mob TOML files, and an empty `compat/` folder. Existing files are never overwritten. Use `/reload` after editing.
+On first launch the mod creates `common.json`, 15 vanilla mob JSON files, and an empty `compat/` folder. Existing files are never overwritten. Use `/reload` after editing. Delete the old `config/fabrimechanus/mob_gear/` folder if it exists; it is no longer read.
 
-首次启动会创建 `common.toml`、15 个原版怪物 TOML 文件和空的 `compat/` 文件夹。已有文件不会被覆盖，修改后使用 `/reload`。
+首次启动会创建 `common.json`、15 个原版怪物 JSON 文件和空的 `compat/` 文件夹。已有文件不会被覆盖，修改后使用 `/reload`。如果还留着旧的 `config/fabrimechanus/mob_gear/` 文件夹，可以直接删除；新版本不再读取它。
 
-`common.toml`:
+`common.json`:
 
-```toml
-# Fabrimechanus mob gear
-enabled = true
-log_unknown_items = true
+```json
+{
+  "enabled": true,
+  "log_unknown_items": true
+}
 ```
 
 One mob file:
 
-```toml
-priority = 0
-mobs = ["minecraft:skeleton", "#minecraft:skeletons"]
-
-[mainhand]
-chance = 1.0
-
-[[mainhand.items]]
-item = "tconstruct:longbow"
-weight = 85
-
-[[mainhand.items]]
-item = "tconstruct:sword"
-weight = 2
-
-[offhand]
-chance = 0.1
-
-[[offhand.items]]
-item = "tconstruct:plate_shield"
-weight = 1
-
-[armor]
-chance = 0.1
-
-[[armor.sets]]
-set = "travelers"
-weight = 3
-
-[[armor.sets]]
-set = "plate"
-weight = 1
+```json
+{
+  "priority": 0,
+  "materialTier": 2,
+  "mobs": ["minecraft:skeleton", "#minecraft:skeletons"],
+  "mainhand": {
+    "chance": 1.0,
+    "items": [
+      { "item": "tconstruct:longbow", "weight": 85 },
+      { "item": "tconstruct:sword", "weight": 2 }
+    ]
+  },
+  "offhand": {
+    "chance": 0.1,
+    "items": [
+      { "item": "tconstruct:plate_shield", "weight": 1 }
+    ]
+  },
+  "armor": {
+    "chance": 0.1,
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
+  }
+}
 ```
 
 `mainhand`, `offhand`, and `armor` are optional. `set` is `plate`, `travelers`, or `none`.
 
 `mainhand`、`offhand`、`armor` 都是可选的。`set` 可选 `plate`、`travelers` 或 `none`。
 
+### Material tier per mob / 每个怪物的材质等级
+
+`materialTier` is a single tier number, not a list of exact materials:
+
+- `0` or omitted: use the global material tier weights
+- `1`: wood/stone/leather tier
+- `2`: iron/gold tier
+- `3`: diamond tier
+- `4`: netherite tier
+
+The game picks a random material **inside that tier** for each tool part. You do not configure every exact material name.
+
+`materialTier` 只是一个等级数字，不是具体材料列表：
+
+- `0` 或不写：使用全局材料等级权重
+- `1`：木/石/皮革等级
+- `2`：铁/金等级
+- `3`：钻石等级
+- `4`：下界合金等级
+
+游戏会在该等级内随机选择材料，每个工具部位独立随机；不需要逐个配置材料名称。
+
+### Armor distribution / 护甲分布
+
+For a mob with an `armor` block:
+
+1. All four armor slots are cleared first, including armor placed by Tinkers' Construct.
+2. `armor.chance` is rolled once for the whole set.
+3. If it succeeds, the first piece always rolls.
+4. Each later piece has a **25% stop chance on normal difficulty**, or **10%** on hard difficulty.
+
+This is the vanilla-style distribution. It deliberately does not use the old independent 85% per-slot roll.
+
+带有 `armor` 配置的怪物：
+
+1. 先清空四个盔甲槽，包括匠魂自己生成的盔甲。
+2. 用 `armor.chance` 对整套护甲判定一次。
+3. 成功后第一件必定生成。
+4. 之后每件在普通难度有 **25% 概率停止**，困难难度为 **10%**。
+
+这是原版风格的分件逻辑，不再使用旧的每槽独立 85%。
+
 ### Material tier weights / 材料等级权重
 
-The existing Forge config still controls the tier weights used by mob gear:
+The global Forge config still controls the fallback tier weights:
 
-原版 Forge 配置仍控制怪物装备的材料等级权重：
+全局 Forge 配置仍控制 `materialTier = 0` 时的等级权重：
 
 ```text
 config/fabrimechanus-common.toml
@@ -266,7 +303,9 @@ tier3 = 17.0
 tier4 = 3.0
 ```
 
----
+The old `config/fabrimechanus/mob_gear/` folder and TOML files are no longer read.
+
+旧的 `config/fabrimechanus/mob_gear/` 文件夹和 TOML 文件不再读取。
 
 ## Tags / 标签
 

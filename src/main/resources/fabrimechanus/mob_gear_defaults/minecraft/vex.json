@@ -1,0 +1,18 @@
+{
+  "priority": 0,
+  "materialTier": 0,
+  "mobs": [
+    "minecraft:vex"
+  ],
+  "mainhand": {
+    "chance": 1,
+    "items": [
+      {
+        "item": "tconstruct:dagger"
+      },
+      {
+        "item": "tconstruct:sword"
+      }
+    ]
+  }
+}

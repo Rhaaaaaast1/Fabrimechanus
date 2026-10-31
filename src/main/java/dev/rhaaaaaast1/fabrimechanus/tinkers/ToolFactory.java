@@ -22,13 +22,25 @@ public final class ToolFactory {
      * @param access registry access of the current level, used to keep the stack packet safe
      */
     public static ItemStack build(Item item, RandomSource random, RegistryAccess access) {
+        return build(item, random, access, 0);
+    }
+
+    /**
+     * Builds a tool/armor piece, optionally forcing one material tier for every part.
+     *
+     * @param materialTier 1-4 for a fixed tier, or 0 to use the global tier weights
+     */
+    public static ItemStack build(Item item, RandomSource random, RegistryAccess access, int materialTier) {
         if (!(item instanceof IModifiable modifiable)) {
             return new ItemStack(item);
         }
         ToolDefinition definition = modifiable.getToolDefinition();
         ItemStack stack;
         if (definition.hasMaterials()) {
-            stack = ToolStack.createTool(item, definition, RandomTierMaterials.buildMaterials(definition, random)).createStack();
+            var materials = materialTier > 0
+                    ? RandomTierMaterials.buildMaterials(definition, random, materialTier)
+                    : RandomTierMaterials.buildMaterials(definition, random);
+            stack = ToolStack.createTool(item, definition, materials).createStack();
         } else {
             stack = new ItemStack(item);
         }

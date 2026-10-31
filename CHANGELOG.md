@@ -10,6 +10,8 @@
 - Empty-hand plant pulling now charges for 20 ticks and uses a both-arms-forward pose; shards no longer cut grass.
 - The no-empty-hand tree rule now also fires on left-click, with 1 damage, small knockback, and the action-bar message.
 - Pebble generation now uses No Tree Punching-style surface supports (grass, dirt, gravel, sand, etc.), scans down up to 8 blocks for stone, and still only runs at the surface.
+- Armor distribution now clears all four slots (including Tinkers' armor) and uses vanilla-style stop chances: first piece always, later pieces stop at 25% normal / 10% hard.
+- Mob gear config is now JSON at `config/fabrimechanus/`; `materialTier` selects the random material tier per mob.
 - Updated JEI text for empty-hand plant pulling.
 
 **中文**
@@ -18,6 +20,8 @@
 - 空手拔草现在蓄力 20 tick，并显示双手前伸姿势；石片不再用于割草。
 - 禁止空手撸树同时监听左键，触发 1 点伤害、小击退和动作栏消息。
 - 石子生成改用参考模组的地表支撑（草、泥土、砂砾、沙子等），向下扫描最多 8 格寻找石头，仍然只在地表生成。
+- 护甲改为先清空四个槽（包括匠魂盔甲），再按原版风格分件：第一件必出，后续普通 25% / 困难 10% 停止。
+- 怪物装备配置改为 `config/fabrimechanus/` 下的 JSON；每个怪物用 `materialTier` 指定随机材料等级。
 - 更新 JEI 的空手拔草说明。
 
 ### Primitive survival / 原始生存
@@ -50,19 +54,21 @@
 
 **English**
 
-- Mob gear config is now TOML under `config/fabrimechanus/mob_gear/`.
-- Layout: `common.toml`, `minecraft/*.toml`, and an empty `compat/`.
+- Mob gear config is JSON under `config/fabrimechanus/` (no `mob_gear` subfolder).
+- Layout: `common.json`, `minecraft/*.json`, and an empty `compat/`.
 - First launch writes 15 vanilla mob files; existing files are never overwritten.
-- `/reload` reloads the TOML rules.
-- The old JSON config format is no longer read.
+- `/reload` reloads the JSON rules.
+- Each mob JSON can set `materialTier` (0 = global weights, 1-4 = fixed tier); materials are randomized within that tier.
+- The old `config/fabrimechanus/mob_gear/` folder and TOML files are no longer read.
 
 **中文**
 
-- 怪物装备配置改为 `config/fabrimechanus/mob_gear/` 下的 TOML。
-- 结构：`common.toml`、`minecraft/*.toml` 和空的 `compat/`。
+- 怪物装备配置改为 `config/fabrimechanus/` 下的 JSON（不再有 `mob_gear` 子文件夹）。
+- 结构：`common.json`、`minecraft/*.json` 和空的 `compat/`。
 - 首次启动写入 15 个原版怪物文件；已有文件不会被覆盖。
-- `/reload` 重新读取 TOML 规则。
-- 不再读取旧 JSON 配置。
+- `/reload` 重新读取 JSON 规则。
+- 每个怪物 JSON 可以设置 `materialTier`（0 = 全局权重，1-4 = 固定等级）；材料在该等级内随机。
+- 不再读取旧的 `config/fabrimechanus/mob_gear/` 文件夹和 TOML 文件。
 
 ### Chest loot and recipes / 箱子战利品与配方
 
@@ -91,8 +97,8 @@
 | Item | Value |
 |---|---|
 | Jar | `fabrimechanus-1.2.0.jar` |
-| Size | 130,179 bytes |
-| SHA-256 | `0541E7692F6A2F3EDF545474932730FCDCA9879387E59546D516BAB8084E640E` |
+| Size | 141,863 bytes |
+| SHA-256 | `46E1E88982648BB9C816562658BD3FDC31F8D65E2670D882A533729D5B0C5856` |
 | Loader | NeoForge 21.1.x |
 | Optional | Tinkers' Construct 3.13.x, Mantle |
 

@@ -28,7 +28,8 @@ import java.util.List;
  * <p>Instances are produced by {@link MobGearReloadListener}; nothing in here references JSON types, so a future
  * format change only touches the listener.</p>
  */
-public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, Armor armor, int priority) {
+public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, Armor armor, int priority,
+                          int materialTier) {
     /** Matches a mob by entity id or by entity type tag. */
     public sealed interface Matcher permits IdMatcher, TagMatcher {
         boolean matches(Mob mob);
@@ -57,7 +58,7 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
         }
 
         /** Builds one weighted tool, or an empty stack when this slot has no candidates. */
-        public ItemStack roll(RandomSource random, RegistryAccess access) {
+        public ItemStack roll(RandomSource random, RegistryAccess access, int materialTier) {
             if (items.isEmpty()) {
                 return ItemStack.EMPTY;
             }
@@ -69,7 +70,7 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
             for (Weighted weighted : items) {
                 roll -= clampWeight(weighted.weight());
                 if (roll < 0) {
-                    return ToolFactory.build(weighted.item(), random, access);
+                    return ToolFactory.build(weighted.item(), random, access, materialTier);
                 }
             }
             return ItemStack.EMPTY;

@@ -76,41 +76,56 @@ public final class MobGearSpawnHandler {
 
         // any slot that still holds an item belongs to Tinkers' Construct's own mob equipment tables, so it is kept as is
         if (plan.hasWeapon() && mob.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && random.nextFloat() < plan.mainhand().chance()) {
-            ItemStack weapon = plan.mainhand().roll(random, access);
+            ItemStack weapon = plan.mainhand().roll(random, access, plan.materialTier());
             if (!weapon.isEmpty()) {
                 mob.setItemSlot(EquipmentSlot.MAINHAND, weapon);
             }
         }
         if (mob.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && random.nextFloat() < plan.offhand().chance()) {
-            ItemStack offhand = plan.offhand().roll(random, access);
+            ItemStack offhand = plan.offhand().roll(random, access, plan.materialTier());
             if (!offhand.isEmpty()) {
                 mob.setItemSlot(EquipmentSlot.OFFHAND, offhand);
             }
         }
-        if (!plan.armor().isEmpty() && random.nextFloat() < plan.armor().chance()) {
-            // one set for the whole mob, so plate and travelers pieces are never mixed
-            MobGearRule.ArmorSet set = plan.armor().roll(random);
-            if (set != MobGearRule.ArmorSet.NONE) {
-                equipArmor(mob, set, random, access);
+        if (!plan.armor().choices().isEmpty()) {
+            // Clear vanilla AND Tinkers' armor so the configured armor roll is authoritative.
+            clearArmor(mob);
+            if (random.nextFloat() < plan.armor().chance()) {
+                // one set for the whole mob, so plate and travelers pieces are never mixed
+                MobGearRule.ArmorSet set = plan.armor().roll(random);
+                if (set != MobGearRule.ArmorSet.NONE) {
+                    equipArmor(mob, set, random, access, plan.materialTier());
+                }
             }
         }
     }
 
-    private static void equipArmor(Mob mob, MobGearRule.ArmorSet set, RandomSource random, RegistryAccess access) {
-        for (ArmorItem.Type type : ArmorItem.Type.values()) {
-            if (type == ArmorItem.Type.BODY) {
+    private static void clearArmor(Mob mob) {
+        mob.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+        mob.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+    }
+
+    /** Vanilla-style distribution: the first piece always rolls, then each later piece may stop the set. */
+    private static void equipArmor(Mob mob, MobGearRule.ArmorSet set, RandomSource random, RegistryAccess access,
+                                   int materialTier) {
+        boolean hard = mob.level().getDifficulty() == net.minecraft.world.Difficulty.HARD;
+        ArmorItem.Type[] types = {
+                ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE,
+                ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS
+        };
+        for (int i = 0; i < types.length; i++) {
+            if (i > 0 && random.nextFloat() < (hard ? 0.10F : 0.25F)) {
+                break;
+            }
+            Item item = MobGearRule.Armor.item(set, types[i]);
+            if (item == null) {
                 continue;
             }
-            EquipmentSlot slot = type.getSlot();
-            if (!mob.getItemBySlot(slot).isEmpty() || random.nextFloat() > 0.85F) {
-                continue;
-            }
-            Item item = MobGearRule.Armor.item(set, type);
-            if (item != null) {
-                ItemStack stack = ToolFactory.build(item, random, access);
-                if (!stack.isEmpty()) {
-                    mob.setItemSlot(slot, stack);
-                }
+            ItemStack stack = ToolFactory.build(item, random, access, materialTier);
+            if (!stack.isEmpty()) {
+                mob.setItemSlot(types[i].getSlot(), stack);
             }
         }
     }

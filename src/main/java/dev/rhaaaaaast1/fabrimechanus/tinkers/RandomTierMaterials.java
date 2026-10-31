@@ -56,6 +56,42 @@ public final class RandomTierMaterials {
         return builder.build();
     }
 
+    /** Builds materials from one fixed tier, falling back to nearby tiers only when that tier has no usable material. */
+    public static MaterialNBT buildMaterials(ToolDefinition definition, RandomSource random, int tier) {
+        if (tier <= 0) {
+            return buildMaterials(definition, random);
+        }
+        MaterialNBT.Builder builder = MaterialNBT.builder();
+        for (MaterialStatsId statType : ToolMaterialHook.stats(definition)) {
+            IMaterial material = pickAtTier(statType, random, tier);
+            builder.add(material == null ? MaterialRegistry.firstWithStatType(statType) : material);
+        }
+        return builder.build();
+    }
+
+    /** Rolls a single material from a fixed tier, preferring the exact tier and then the nearest usable one. */
+    private static IMaterial pickAtTier(MaterialStatsId statType, RandomSource random, int tier) {
+        List<List<IMaterial>> tiers = tiersFor(statType);
+        int preferred = Mth.clamp(tier, 0, MAX_TIER);
+        for (int distance = 0; distance <= MAX_TIER; distance++) {
+            int higher = preferred + distance;
+            if (higher <= MAX_TIER) {
+                IMaterial found = pickFrom(tiers.get(higher), random);
+                if (found != null) {
+                    return found;
+                }
+            }
+            int lower = preferred - distance;
+            if (distance > 0 && lower >= 0) {
+                IMaterial found = pickFrom(tiers.get(lower), random);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
     /** Rolls a single material that can actually be used by the given stat type. */
     private static IMaterial pick(MaterialStatsId statType, RandomSource random) {
         List<List<IMaterial>> tiers = tiersFor(statType);
