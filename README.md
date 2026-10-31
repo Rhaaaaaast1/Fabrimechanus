@@ -48,9 +48,9 @@ https://mirrors.cloud.tencent.com/gradle/gradle-8.8-bin.zip
 | `RandomTierMaterials` | 按等级概率为每个部件独立选材 |
 | `ToolFactory` | 用选中的材料组装匠魂工具/防具 |
 | `VanillaGear` | 判断装备是否属于需要剥离的原版物品 |
-| `MobGearRule` | 数据包规则：怪物、主手/副手权重、护甲概率与套装 |
+| `MobGearRule` | 配置规则：怪物、主手/副手权重、护甲概率与套装 |
 | `MobGearRegistry` | 规则查找表，按 `priority` 取第一条匹配 |
-| `MobGearReloadListener` | 读取 `data/<namespace>/fabrimechanus/mob_gear/**/*.json` |
+| `MobGearConfig` | 读取 `config/fabrimechanus/mob_gear/**/*.json`，首次运行生成每个怪物的默认文件 |
 | `MobGearSpawnHandler` | 生成时剥离原版装备、发放匠魂装备、挂载远程 AI |
 | `MobAmmoHandler` | 给怪物提供箭矢（匠魂弹药链路） |
 | `TinkersRangedAttackGoal` | 识别匠魂弓的远程攻击 AI |
@@ -59,8 +59,78 @@ https://mirrors.cloud.tencent.com/gradle/gradle-8.8-bin.zip
 
 ## 配置
 
+### 怪物装备配置
+
+首次进入游戏后会自动生成：
+
+```text
+config/fabrimechanus/mob_gear/
+├── README.txt
+├── minecraft/          原版怪物，每个怪物一个 json
+└── compat/             其他模组的怪物
+```
+
+默认会写入 15 个原版怪物配置（skeleton、zombie、piglin、pillager 等）。已有文件不会被覆盖，改完可用 `/reload` 重新读取。
+
+文件格式：
+
+```json
+{
+  "priority": 0,
+  "mobs": ["minecraft:skeleton", "#minecraft:skeletons"],
+  "mainhand": {
+    "chance": 1.0,
+    "items": [
+      { "item": "tconstruct:longbow", "weight": 85 },
+      { "item": "tconstruct:sword", "weight": 2 }
+    ]
+  },
+  "offhand": {
+    "chance": 0.1,
+    "items": [ { "item": "tconstruct:shield", "weight": 1 } ]
+  },
+  "armor": {
+    "chance": 0.1,
+    "sets": [
+      { "set": "travelers", "weight": 3 },
+      { "set": "plate", "weight": 1 }
+    ]
+  }
+}
+```
+
+- `priority`：越高越优先，第一条匹配的规则生效
+- `mobs`：实体 id，或 `#` 开头的实体标签
+- `chance`：0~1，是否填充该槽位/是否穿整套护甲
+- `weight`：列表内的相对权重
+- `armor.set`：`plate`、`travelers` 或 `none`
+
+### 材料等级权重
+
 材料等级权重在 `config/fabrimechanus-common.toml` 的
 `materialTierWeights` 下调整；权重是相对值，不要求和为 100。
+
+## 关于箱子战利品
+
+本模组**不修改原版箱子战利品表**，也不会从箱子、地牢、要塞等战利品中删除原版工具/护甲。
+
+它只做一件事：
+
+> 在新生成的怪物已经获得原版装备之后，把这些怪物**身上装备槽**里的原版工具/护甲清空。
+
+清空范围由物品标签控制：
+
+```text
+fabrimechanus:stripped_monster_gear
+```
+
+所以：
+
+- 箱子里的原版工具/护甲：不受影响
+- 怪物手里的原版武器：会被清空
+- 怪物身上的原版防具：会被清空
+- 匠魂自己的怪物装备表：不受影响
+- 玩家已经拿到的装备：不受影响
 
 ## Gradle 警告
 
