@@ -1,49 +1,31 @@
 # Tinkers' AI — Changelog / 更新日志
 
-## 1.2.1 — 2026-10-31 (1.21.1 only)
+## 1.2.0 — 2026-10-31 (1.21.1 only)
 
-### Fixes / 修复
+### Post-release fixes / 后续修复
 
 **English**
 
-- Added the missing root item models, fixing the missing item and block-item textures for all primitive items.
-- Cleaned the loose-rock block model names so the placed block renders correctly.
-- Plant fiber is now pulled by **empty-hand right-click**, not by a shard. The shard is only a crafting material.
-- The no-empty-hand tree rule now triggers on left-click as well as break speed, with the 1-damage, small knockback, and `你疯了?为什么要空手打树?` action-bar message.
-- Added vanilla wooden tag fallbacks so logs, planks, stairs, slabs, fences, gates, doors, trapdoors, signs, buttons, and pressure plates are covered even if the custom tag is overridden.
-- Pebble world generation now uses count 5, `WORLD_SURFACE`, and no extra random rejection, matching the referenced No Tree Punching placement more closely.
-- Updated JEI text to describe empty-hand grass pulling.
+- Added the missing root item models, fixing the item and block-item textures.
+- Empty-hand plant pulling now charges for 20 ticks and uses a both-arms-forward pose; shards no longer cut grass.
+- The no-empty-hand tree rule now also fires on left-click, with 1 damage, small knockback, and the action-bar message.
+- Pebble generation now uses No Tree Punching-style surface supports (grass, dirt, gravel, sand, etc.), scans down up to 8 blocks for stone, and still only runs at the surface.
+- Updated JEI text for empty-hand plant pulling.
 
 **中文**
 
-- 补齐物品根模型，修复所有原始物品和方块物品的材质缺失。
-- 清理石子方块模型名称，修复放置后的方块纹理。
-- 拔草改为**空手右键**，不再使用石片；石片只作为合成材料。
-- 禁止空手撸树现在同时监听左键和破坏速度，触发 1 点伤害、小击退和 `你疯了?为什么要空手打树?` 动作栏消息。
-- 增加原版木质标签兜底，即使自定义标签被覆盖，也能覆盖原木、木板、楼梯、台阶、栅栏、栅栏门、门、活板门、告示牌、按钮和压力板。
-- 石子生成改为 count 5、`WORLD_SURFACE`，并去掉额外随机拒绝，更接近参考模组的放置规则。
-- 更新 JEI 文本，说明空手拔草。
-
-### File / 文件
-
-| Item | Value |
-|---|---|
-| Jar | `fabrimechanus-1.2.1.jar` |
-| Size | 125,791 bytes |
-| SHA-256 | `AB3270CB19CA82C0D5EB7999165FA03684AFB16360ED46644BBD4D6C7F40AAD6` |
-| Loader | NeoForge 21.1.x |
-| Optional | Tinkers' Construct 3.13.x, Mantle |
-
----
-
-## 1.2.0 — 2026-10-31 (1.21.1 only)
+- 补齐物品根模型，修复物品和方块物品材质。
+- 空手拔草现在蓄力 20 tick，并显示双手前伸姿势；石片不再用于割草。
+- 禁止空手撸树同时监听左键，触发 1 点伤害、小击退和动作栏消息。
+- 石子生成改用参考模组的地表支撑（草、泥土、砂砾、沙子等），向下扫描最多 8 格寻找石头，仍然只在地表生成。
+- 更新 JEI 的空手拔草说明。
 
 ### Primitive survival / 原始生存
 
 **English**
 
 - Added `small_pebble` and `small_flint` as waterloggable surface blocks.
-- World generation places them only on valid stone/gravel/sand supports, never floating, never on grass or leaves.
+- World generation uses No Tree Punching-style surface supports (grass, dirt, gravel, sand, terracotta, stone, etc.) and scans down up to 8 blocks for stone; it only runs at the surface and never floats.
 - Right-click picks up a rock; left-click drops it; removing the support drops it as well.
 - Added `stone_shard` and `flint_shard`; sneak-right-click a rock on configured knapping blocks to convert it, with stone particles and the item-break sound.
 - Added optional JEI information pages for the rocks, shards, fiber, cord, and axes.
@@ -55,7 +37,7 @@
 **中文**
 
 - 新增可含水的表面方块 `small_pebble` 和 `small_flint`。
-- 只生成在合法的石头/砂砾/沙子支撑上，不会悬空，也不会生成在草或树叶上。
+- 生成使用参考模组的地表支撑（草、泥土、砂砾、沙子、陶瓦、石头等），向下最多扫描 8 格寻找石头；只在地表生成，不会悬空。
 - 右键拾取，左键掉落；支撑方块被破坏时也会掉落。
 - 新增 `stone_shard` 和 `flint_shard`；潜行右键把石子按在可敲击方块上转换，带石头粒子和物品损坏音效。
 - 为石子、碎片、纤维、植物绳和斧子添加可选的 JEI 信息页。
@@ -109,8 +91,8 @@
 | Item | Value |
 |---|---|
 | Jar | `fabrimechanus-1.2.0.jar` |
-| Size | 124,183 bytes |
-| SHA-256 | `928D0E11D97C378A9C38D55EF40F55E3ABDDC29F6B1BD3B41B9009BB0D164BE6` |
+| Size | 130,179 bytes |
+| SHA-256 | `0541E7692F6A2F3EDF545474932730FCDCA9879387E59546D516BAB8084E640E` |
 | Loader | NeoForge 21.1.x |
 | Optional | Tinkers' Construct 3.13.x, Mantle |
 

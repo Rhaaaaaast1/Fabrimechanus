@@ -1,13 +1,22 @@
 {
   "replace": false,
   "values": [
-    "#minecraft:base_stone_overworld",
+    "minecraft:grass_block",
+    "minecraft:dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:podzol",
+    "minecraft:gravel",
+    "minecraft:sand",
+    "minecraft:red_sand",
+    "minecraft:terracotta",
     "minecraft:stone",
     "minecraft:andesite",
     "minecraft:diorite",
     "minecraft:granite",
     "minecraft:deepslate",
     "minecraft:tuff",
-    "minecraft:calcite"
+    "minecraft:calcite",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone"
   ]
 }

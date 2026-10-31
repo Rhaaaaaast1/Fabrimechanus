@@ -3,6 +3,9 @@ package dev.rhaaaaaast1.fabrimechanus.primitive;
 import dev.rhaaaaaast1.fabrimechanus.tinkers.FabriTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -19,6 +22,7 @@ import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +31,9 @@ import java.util.UUID;
 /** Empty-hand tree punching rules and disabled-item messages. */
 public final class PrimitiveEvents {
     private static final int WARN_COOLDOWN_TICKS = 20;
+    private static final int PLANT_PULL_TICKS = 20;
     private static final Map<UUID, Long> LAST_WARN = new HashMap<>();
+    private static final Map<UUID, PlantPull> PLANT_PULLS = new HashMap<>();
 
     private PrimitiveEvents() {
     }
@@ -39,6 +45,7 @@ public final class PrimitiveEvents {
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onRightClickItem);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onAttack);
+        NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onServerTick);
     }
 
     private static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
@@ -74,11 +81,8 @@ public final class PrimitiveEvents {
             BlockPos pos = event.getPos();
             if (level.getBlockState(pos).is(FabriTags.PLANT_FIBER_SOURCES)) {
                 if (!level.isClientSide()) {
-                    level.destroyBlock(pos, false);
-                    int count = 1 + level.random.nextInt(2);
-                    Block.popResource(level, pos, new ItemStack(PrimitiveRegistry.PLANT_FIBER.get(), count));
-                    level.playSound(null, pos, SoundEvents.GRASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.2F);
-                    player.swing(InteractionHand.MAIN_HAND, true);
+                    PLANT_PULLS.putIfAbsent(player.getUUID(),
+                            new PlantPull(pos.immutable(), level.dimension(), level.getGameTime()));
                 }
                 event.setCanceled(true);
                 event.setCancellationResult(InteractionResult.SUCCESS);
@@ -116,6 +120,40 @@ public final class PrimitiveEvents {
     private static void onAttack(AttackEntityEvent event) {
         if (disable(event.getEntity(), event.getEntity().getMainHandItem())) {
             event.setCanceled(true);
+        }
+    }
+
+    private static void onServerTick(ServerTickEvent.Post event) {
+        if (PLANT_PULLS.isEmpty()) {
+            return;
+        }
+        MinecraftServer server = event.getServer();
+        var iterator = PLANT_PULLS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            var entry = iterator.next();
+            PlantPull pull = entry.getValue();
+            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+            if (player == null) {
+                iterator.remove();
+                continue;
+            }
+            if (player.serverLevel().getGameTime() - pull.startTick() < PLANT_PULL_TICKS) {
+                continue;
+            }
+            iterator.remove();
+            if (player.level().dimension() != pull.dimension()
+                    || player.blockPosition().distSqr(pull.pos()) > 16.0D) {
+                continue;
+            }
+            Level level = player.serverLevel();
+            if (!level.getBlockState(pull.pos()).is(FabriTags.PLANT_FIBER_SOURCES)) {
+                continue;
+            }
+            level.destroyBlock(pull.pos(), false);
+            int count = 1 + level.random.nextInt(2);
+            Block.popResource(level, pull.pos(), new ItemStack(PrimitiveRegistry.PLANT_FIBER.get(), count));
+            level.playSound(null, pull.pos(), SoundEvents.GRASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.2F);
+            player.swing(InteractionHand.MAIN_HAND, true);
         }
     }
 
@@ -161,5 +199,8 @@ public final class PrimitiveEvents {
 
     private static boolean isAxe(ItemStack stack) {
         return !stack.isEmpty() && stack.is(ItemTags.AXES);
+    }
+
+    private record PlantPull(BlockPos pos, ResourceKey<Level> dimension, long startTick) {
     }
 }

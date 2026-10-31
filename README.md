@@ -5,7 +5,7 @@
 
 - GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
 - License: MIT
-- Version: **1.2.1**
+- Version: **1.2.0**
 - Minecraft: **1.21.1**
 - Loader: **NeoForge 21.1.x**
 - Optional: **Tinkers' Construct 3.13.x**, **Mantle**
@@ -33,8 +33,7 @@ Tinkers' AI 在游戏里加入两层内容：
 
 ### Loose rocks / 石子
 
-- `fabrimechanus:small_pebble` and `fabrimechanus:small_flint` are placeable ground blocks.
-- They generate only on the world surface, resting directly on stone-like or gravel/sand blocks. They never float and never generate on grass or leaves.
+- They generate only on the world surface. Generation follows No Tree Punching-style surface supports (grass, dirt, gravel, sand, terracotta, stone, and similar blocks) and scans down up to 8 blocks for stone. They never float and never generate on leaves.
 - Both blocks have a `waterlogged` state.
 - **Right-click** picks the rock up.
 - **Left-click** breaks it and drops the item.
@@ -42,7 +41,7 @@ Tinkers' AI 在游戏里加入两层内容：
 - With JEI installed, the rocks, shards, fiber, cord, and axes have information pages.
 
 - `fabrimechanus:small_pebble` 和 `fabrimechanus:small_flint` 是可放置的地面方块。
-- 只生成在世界表面，且必须直接放在石质或砂砾类方块上；不会悬空，也不会生成在草或树叶上。
+- 只生成在世界表面，生成规则参考 No Tree Punching 的地表支撑（草、泥土、砂砾、沙子、陶瓦、石头等），并向下最多扫描 8 格寻找石头；不会悬空，也不会生成在树叶上。
 - 两个方块都有 `waterlogged`（含水）状态。
 - **右键**拾取。
 - **左键**破坏并掉落物品。
@@ -67,11 +66,11 @@ The action plays stone break particles and the item-break sound. The knapping bl
 
 ### Plant fiber / 植物纤维
 
-**Right-click with an empty hand** on short grass, fern, tall grass, or large fern. The plant is pulled out by the roots and drops 1–2 `fabrimechanus:plant_fiber`.
+Hold **right-click with an empty hand** on short grass, fern, tall grass, or large fern for 20 ticks. Both arms extend forward over the plant; when the charge finishes, the plant is pulled out by the roots and drops 1–2 `fabrimechanus:plant_fiber`.
 
 Three plant fiber craft one `fabrimechanus:plant_cord`.
 
-**空手右键**短草、蕨、高草、大型蕨，会把草连根拔起，掉落 1–2 个 `fabrimechanus:plant_fiber`。
+**空手按住右键**短草、蕨、高草、大型蕨蓄力 20 tick，双臂向前伸到草上；蓄力完成后把草连根拔起，掉落 1–2 个 `fabrimechanus:plant_fiber`。
 
 3 个植物纤维合成 1 个 `fabrimechanus:plant_cord`。
 
@@ -305,7 +304,7 @@ Install on both client and server.
 Output:
 
 ```text
-build/libs/fabrimechanus-1.2.1.jar
+build/libs/fabrimechanus-1.2.0.jar
 ```
 
 ---

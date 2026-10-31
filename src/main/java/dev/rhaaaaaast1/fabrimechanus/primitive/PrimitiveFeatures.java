@@ -4,6 +4,7 @@ import dev.rhaaaaaast1.fabrimechanus.Fabrimechanus;
 import dev.rhaaaaaast1.fabrimechanus.tinkers.FabriTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -23,10 +24,10 @@ public final class PrimitiveFeatures {
 
     public static final DeferredHolder<Feature<?>, LooseRockFeature> SMALL_PEBBLE =
             FEATURES.register("small_pebble", () -> new LooseRockFeature(
-                    PrimitiveRegistry.SMALL_PEBBLE.get(), FabriTags.PEBBLE_SUPPORT));
+                    PrimitiveRegistry.SMALL_PEBBLE.get(), FabriTags.PEBBLE_SUPPORT, true));
     public static final DeferredHolder<Feature<?>, LooseRockFeature> SMALL_FLINT =
             FEATURES.register("small_flint", () -> new LooseRockFeature(
-                    PrimitiveRegistry.SMALL_FLINT.get(), FabriTags.FLINT_SUPPORT));
+                    PrimitiveRegistry.SMALL_FLINT.get(), FabriTags.FLINT_SUPPORT, false));
 
     private PrimitiveFeatures() {
     }
@@ -38,11 +39,13 @@ public final class PrimitiveFeatures {
     public static final class LooseRockFeature extends Feature<NoneFeatureConfiguration> {
         private final Block block;
         private final TagKey<Block> support;
+        private final boolean requireStoneBelow;
 
-        public LooseRockFeature(Block block, TagKey<Block> support) {
+        public LooseRockFeature(Block block, TagKey<Block> support, boolean requireStoneBelow) {
             super(NoneFeatureConfiguration.CODEC);
             this.block = block;
             this.support = support;
+            this.requireStoneBelow = requireStoneBelow;
         }
 
         @Override
@@ -58,6 +61,9 @@ public final class PrimitiveFeatures {
             if (!below.is(support)) {
                 return false;
             }
+            if (requireStoneBelow && !hasStoneBelow(level, pos)) {
+                return false;
+            }
 
             BlockState current = level.getBlockState(pos);
             boolean water = current.is(Blocks.WATER);
@@ -70,6 +76,15 @@ public final class PrimitiveFeatures {
                 state = state.setValue(LooseRockBlock.WATERLOGGED, water);
             }
             return level.setBlock(pos, state, 2);
+        }
+
+        private static boolean hasStoneBelow(WorldGenLevel level, BlockPos pos) {
+            for (int i = 1; i <= 8; i++) {
+                if (level.getBlockState(pos.below(i)).is(BlockTags.BASE_STONE_OVERWORLD)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
