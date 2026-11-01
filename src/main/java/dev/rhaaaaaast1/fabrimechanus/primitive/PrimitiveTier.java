@@ -7,8 +7,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 /** Low-tier tool material used by the crude stone/flint axes. */
 public enum PrimitiveTier implements Tier {
-    STONE(10, 2.0F, 0.0F, 15, ItemTags.STONE_TOOL_MATERIALS),
-    FLINT(10, 2.2F, 0.5F, 15, ItemTags.STONE_TOOL_MATERIALS);
+    STONE(15, 2.0F, 0.0F, 15, ItemTags.STONE_TOOL_MATERIALS),
+    FLINT(15, 2.2F, 0.0F, 15, ItemTags.STONE_TOOL_MATERIALS);
 
     private final int uses;
     private final float speed;

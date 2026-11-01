@@ -2,6 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
+      "tag": "minecraft:axes"
+    },
+    {
       "item": "minecraft:mangrove_log"
     }
   ],

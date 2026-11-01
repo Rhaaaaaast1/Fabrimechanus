@@ -84,6 +84,6 @@ public final class PrimitiveRegistry {
     private static Item.Properties axeProperties(PrimitiveTier tier) {
         return new Item.Properties()
                 .durability(tier.getUses())
-                .attributes(AxeItem.createAttributes(tier, 6.0F, -3.2F));
+                .attributes(AxeItem.createAttributes(tier, 2.5F, -3.2F));
     }
 }

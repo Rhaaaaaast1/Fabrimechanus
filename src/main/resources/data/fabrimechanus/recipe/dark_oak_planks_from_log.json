@@ -2,6 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
+      "tag": "minecraft:axes"
+    },
+    {
       "item": "minecraft:dark_oak_log"
     }
   ],

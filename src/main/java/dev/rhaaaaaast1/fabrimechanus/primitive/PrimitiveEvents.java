@@ -2,8 +2,10 @@ package dev.rhaaaaaast1.fabrimechanus.primitive;
 
 import dev.rhaaaaaast1.fabrimechanus.tinkers.FabriTags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -12,10 +14,12 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
@@ -32,8 +36,10 @@ import java.util.UUID;
 public final class PrimitiveEvents {
     private static final int WARN_COOLDOWN_TICKS = 20;
     private static final int PLANT_PULL_TICKS = 20;
+    private static final int AXE_SAW_TICKS = 20;
     private static final Map<UUID, Long> LAST_WARN = new HashMap<>();
     private static final Map<UUID, PlantPull> PLANT_PULLS = new HashMap<>();
+    private static final Map<UUID, AxeSaw> AXE_SAWS = new HashMap<>();
 
     private PrimitiveEvents() {
     }
@@ -46,6 +52,7 @@ public final class PrimitiveEvents {
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onAttack);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onServerTick);
+        NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onCrafted);
     }
 
     private static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
@@ -76,9 +83,24 @@ public final class PrimitiveEvents {
 
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Player player = event.getEntity();
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        ItemStack held = player.getMainHandItem();
+
+        if (event.getHand() == InteractionHand.MAIN_HAND
+                && isAxe(held)
+                && !PrimitiveTargets.contains(held.getItem())
+                && level.getBlockState(pos).is(BlockTags.LOGS)) {
+            if (!level.isClientSide()) {
+                AXE_SAWS.putIfAbsent(player.getUUID(),
+                        new AxeSaw(pos.immutable(), level.dimension(), level.getGameTime()));
+            }
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+
         if (event.getHand() == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
-            Level level = event.getLevel();
-            BlockPos pos = event.getPos();
             if (level.getBlockState(pos).is(FabriTags.PLANT_FIBER_SOURCES)) {
                 if (!level.isClientSide()) {
                     PLANT_PULLS.putIfAbsent(player.getUUID(),
@@ -123,8 +145,33 @@ public final class PrimitiveEvents {
         }
     }
 
+    private static void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+        ItemStack result = event.getCrafting();
+        if (!result.is(ItemTags.PLANKS) || result.getCount() != 2) {
+            return;
+        }
+        ItemStack axe = ItemStack.EMPTY;
+        boolean hasLog = false;
+        var inventory = event.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.is(ItemTags.AXES)) {
+                axe = stack.copy();
+            } else if (stack.is(ItemTags.LOGS)) {
+                hasLog = true;
+            }
+        }
+        if (axe.isEmpty() || !hasLog) {
+            return;
+        }
+        Player player = event.getEntity();
+        if (!player.getInventory().add(axe)) {
+            player.drop(axe, false);
+        }
+    }
+
     private static void onServerTick(ServerTickEvent.Post event) {
-        if (PLANT_PULLS.isEmpty()) {
+        if (PLANT_PULLS.isEmpty() && AXE_SAWS.isEmpty()) {
             return;
         }
         MinecraftServer server = event.getServer();
@@ -153,6 +200,39 @@ public final class PrimitiveEvents {
             int count = 1 + level.random.nextInt(2);
             Block.popResource(level, pull.pos(), new ItemStack(PrimitiveRegistry.PLANT_FIBER.get(), count));
             level.playSound(null, pull.pos(), SoundEvents.GRASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.2F);
+            player.swing(InteractionHand.MAIN_HAND, true);
+        }
+
+        var sawIterator = AXE_SAWS.entrySet().iterator();
+        while (sawIterator.hasNext()) {
+            var entry = sawIterator.next();
+            AxeSaw saw = entry.getValue();
+            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+            if (player == null) {
+                sawIterator.remove();
+                continue;
+            }
+            if (player.serverLevel().getGameTime() - saw.startTick() < AXE_SAW_TICKS) {
+                continue;
+            }
+            sawIterator.remove();
+            if (player.level().dimension() != saw.dimension()
+                    || player.blockPosition().distSqr(saw.pos()) > 16.0D) {
+                continue;
+            }
+            Level level = player.serverLevel();
+            BlockState state = level.getBlockState(saw.pos());
+            if (!state.is(BlockTags.LOGS) || !isAxe(player.getMainHandItem())) {
+                continue;
+            }
+            Block planks = planksFor(state);
+            if (planks == Blocks.AIR) {
+                continue;
+            }
+            level.removeBlock(saw.pos(), false);
+            Block.popResource(level, saw.pos(), new ItemStack(planks, 2));
+            level.playSound(null, saw.pos(), SoundEvents.WOOD_BREAK, SoundSource.PLAYERS, 0.8F, 1.0F);
+            player.getMainHandItem().hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
             player.swing(InteractionHand.MAIN_HAND, true);
         }
     }
@@ -201,6 +281,24 @@ public final class PrimitiveEvents {
         return !stack.isEmpty() && stack.is(ItemTags.AXES);
     }
 
+    private static Block planksFor(BlockState state) {
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (id == null) {
+            return Blocks.AIR;
+        }
+        String path = id.getPath()
+                .replaceFirst("^stripped_", "")
+                .replaceFirst("_log$", "")
+                .replaceFirst("_wood$", "")
+                .replaceFirst("_stem$", "")
+                .replaceFirst("_hyphae$", "")
+                .replaceFirst("_block$", "");
+        return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("minecraft", path + "_planks"));
+    }
+
     private record PlantPull(BlockPos pos, ResourceKey<Level> dimension, long startTick) {
+    }
+
+    private record AxeSaw(BlockPos pos, ResourceKey<Level> dimension, long startTick) {
     }
 }
