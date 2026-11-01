@@ -165,7 +165,8 @@ public final class PrimitiveEvents {
             return;
         }
         Player player = event.getEntity();
-        if (!player.getInventory().add(axe)) {
+        axe.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+        if (!axe.isEmpty() && !player.getInventory().add(axe)) {
             player.drop(axe, false);
         }
     }
