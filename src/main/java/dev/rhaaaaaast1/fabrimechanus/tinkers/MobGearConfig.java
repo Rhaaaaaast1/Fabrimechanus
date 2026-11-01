@@ -1,12 +1,11 @@
 package dev.rhaaaaaast1.fabrimechanus.tinkers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -24,25 +23,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
 /**
- * Loads mob gear rules from {@code config/fabrimechanus/mob_gear/}.
+ * Loads JSON mob gear rules from {@code config/fabrimechanus/}.
  *
- * <p>The folder is created on first launch with one JSON file per vanilla mob. Packs can edit those files or add
- * their own under {@code minecraft/} or {@code compat/}. The same reload listener mechanism is kept, so {@code /reload}
- * re-reads the folder.</p>
- *
- * <p>File format is the same as the old datapack format; the only difference is the location. Unknown items are
- * skipped with a log line instead of breaking the whole reload.</p>
+ * <p>The folder contains common.json, minecraft/*.json and an empty compat/ folder. Vanilla tools and armor are
+ * stripped from spawning monsters before these rules build their Tinkers' replacements.</p>
  */
 public final class MobGearConfig implements PreparableReloadListener {
-    /** Folder inside the instance's config directory. */
     public static final String DIRECTORY = "fabrimechanus";
     public static final String VANILLA = "minecraft";
     public static final String COMPAT = "compat";
@@ -52,12 +47,22 @@ public final class MobGearConfig implements PreparableReloadListener {
     private static final String DEFAULT_MAIN = """
             {
               "enabled": true,
-              "log_unknown_items": true
+              "log_unknown_items": true,
+              "worldgen": {
+                "small_pebble": { "enabled": true, "count": 4 },
+                "small_flint": { "enabled": true, "count": 1 }
+              }
             }
             """;
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final List<String> ANCIENT_TOOLS = List.of(
+            "tconstruct:melting_pan", "tconstruct:war_pick", "tconstruct:battlesign",
+            "tconstruct:swasher", "tconstruct:minotaur_axe"
+    );
+    private static final List<String> WIDE_TOOLS = List.of(
+            "tconstruct:cleaver", "tconstruct:broad_axe", "tconstruct:scythe"
+    );
 
-    /** Default files copied into a fresh config folder. Keep in sync with resources/fabrimechanus/mob_gear_defaults. */
     private static final List<String> DEFAULT_MOBS = List.of(
             "bogged", "drowned", "husk", "illusioner", "piglin", "piglin_brute", "pillager",
             "skeleton", "stray", "vex", "vindicator", "wither_skeleton", "zombie",
@@ -68,10 +73,6 @@ public final class MobGearConfig implements PreparableReloadListener {
         return FMLPaths.CONFIGDIR.get().resolve(DIRECTORY);
     }
 
-    /**
-     * Creates the config folder and copies any missing default files. Existing files are never overwritten, so edits
-     * survive updates.
-     */
     public static void ensureDefaults() {
         Path root = configRoot();
         try {
@@ -116,9 +117,9 @@ public final class MobGearConfig implements PreparableReloadListener {
                 }, gameExecutor);
     }
 
-    /** Re-reads the config folder and replaces the active rule list. */
     public static void reloadNow() {
         ensureDefaults();
+        PrimitiveConfig.load();
         Path root = configRoot();
         List<MobGearRule> rules = new ArrayList<>();
         int vanilla = 0;
@@ -164,26 +165,25 @@ public final class MobGearConfig implements PreparableReloadListener {
                         relative, VANILLA, COMPAT);
             }
 
-            JsonElement json;
+            JsonObject json;
             try {
-                json = JsonParser.parseString(Files.readString(file));
+                JsonElement parsed = JsonParser.parseString(Files.readString(file));
+                if (!parsed.isJsonObject()) {
+                    LOGGER.warn("[fabrimechanus] skipping mob gear file {}: root is not an object", relative);
+                    continue;
+                }
+                json = parsed.getAsJsonObject();
             } catch (IOException | RuntimeException exception) {
                 LOGGER.warn("[fabrimechanus] skipping unreadable mob gear file {}: {}", relative, exception.getMessage());
                 continue;
             }
 
-            DataResult<MobGearJson> parsed = MobGearJson.CODEC.parse(JsonOps.INSTANCE, json);
-            MobGearJson data = parsed.resultOrPartial(error -> LOGGER.warn("[fabrimechanus] skipping mob gear file {}: {}", relative, error)).orElse(null);
-            if (data == null) {
-                continue;
-            }
             try {
-                MobGearRule rule = data.toRule(relative);
+                MobGearRule rule = parseRule(json, relative, options);
                 if (rule != null) {
                     rules.add(rule);
                 }
             } catch (RuntimeException exception) {
-                // one broken file must never take down the whole reload, other files still need their rules
                 LOGGER.error("[fabrimechanus] failed to build mob gear rule from {}", relative, exception);
             }
         }
@@ -202,7 +202,7 @@ public final class MobGearConfig implements PreparableReloadListener {
             if (!json.isJsonObject()) {
                 return new MainOptions(true, true);
             }
-            var object = json.getAsJsonObject();
+            JsonObject object = json.getAsJsonObject();
             boolean enabled = !object.has("enabled") || object.get("enabled").getAsBoolean();
             boolean logUnknown = !object.has("log_unknown_items") || object.get("log_unknown_items").getAsBoolean();
             return new MainOptions(enabled, logUnknown);
@@ -212,117 +212,149 @@ public final class MobGearConfig implements PreparableReloadListener {
         }
     }
 
-    private record MainOptions(boolean enabled, boolean logUnknownItems) {
-    }
+    @Nullable
+    private static MobGearRule parseRule(JsonObject json, String fileLabel, MainOptions options) {
+        List<String> mobs = stringList(json.getAsJsonArray("mobs"));
+        if (mobs.isEmpty()) {
+            LOGGER.warn("[fabrimechanus] mob gear file {} has no usable mobs, skipping it", fileLabel);
+            return null;
+        }
 
-    /** Raw JSON shape of one file. Kept separate from {@link MobGearRule} so the format can evolve on its own. */
-    record MobGearJson(List<String> mobs, Optional<SlotJson> mainhand, Optional<SlotJson> offhand,
-                       Optional<ArmorJson> armor, int priority, int materialTier) {
-        static final Codec<MobGearJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.listOf().fieldOf("mobs").forGetter(MobGearJson::mobs),
-                SlotJson.CODEC.optionalFieldOf("mainhand").forGetter(MobGearJson::mainhand),
-                SlotJson.CODEC.optionalFieldOf("offhand").forGetter(MobGearJson::offhand),
-                ArmorJson.CODEC.optionalFieldOf("armor").forGetter(MobGearJson::armor),
-                Codec.INT.optionalFieldOf("priority", 0).forGetter(MobGearJson::priority),
-                Codec.INT.optionalFieldOf("materialTier", 0).forGetter(MobGearJson::materialTier)
-        ).apply(instance, MobGearJson::new));
-
-        @Nullable
-        MobGearRule toRule(String fileLabel) {
-            List<MobGearRule.Matcher> matchers = new ArrayList<>();
-            for (String raw : this.mobs) {
-                if (raw.startsWith("#")) {
-                    ResourceLocation tagId = ResourceLocation.tryParse(raw.substring(1));
-                    if (tagId == null) {
-                        LOGGER.warn("[fabrimechanus] invalid entity tag '{}' in mob gear file {}", raw, fileLabel);
-                    } else {
-                        matchers.add(new MobGearRule.TagMatcher(MobGearRule.entityTag(tagId)));
-                    }
+        List<MobGearRule.Matcher> matchers = new ArrayList<>();
+        for (String raw : mobs) {
+            if (raw.startsWith("#")) {
+                ResourceLocation tagId = ResourceLocation.tryParse(raw.substring(1));
+                if (tagId == null) {
+                    LOGGER.warn("[fabrimechanus] invalid entity tag '{}' in mob gear file {}", raw, fileLabel);
                 } else {
-                    ResourceLocation mobId = ResourceLocation.tryParse(raw);
-                    if (mobId == null) {
-                        LOGGER.warn("[fabrimechanus] invalid entity id '{}' in mob gear file {}", raw, fileLabel);
-                    } else {
-                        matchers.add(new MobGearRule.IdMatcher(mobId));
-                    }
+                    matchers.add(new MobGearRule.TagMatcher(MobGearRule.entityTag(tagId)));
+                }
+            } else {
+                ResourceLocation mobId = ResourceLocation.tryParse(raw);
+                if (mobId == null) {
+                    LOGGER.warn("[fabrimechanus] invalid entity id '{}' in mob gear file {}", raw, fileLabel);
+                } else {
+                    matchers.add(new MobGearRule.IdMatcher(mobId));
                 }
             }
-            if (matchers.isEmpty()) {
-                LOGGER.warn("[fabrimechanus] mob gear file {} has no usable mobs, skipping it", fileLabel);
-                return null;
-            }
-            return new MobGearRule(
-                    List.copyOf(matchers),
-                    mainhand.map(SlotJson::toSlot).orElse(MobGearRule.Slot.EMPTY),
-                    offhand.map(SlotJson::toSlot).orElse(MobGearRule.Slot.EMPTY),
-                    armor.map(ArmorJson::toArmor).orElse(MobGearRule.Armor.NONE),
-                    priority,
-                    materialTier
-            );
         }
+        if (matchers.isEmpty()) {
+            LOGGER.warn("[fabrimechanus] mob gear file {} has no usable mobs, skipping it", fileLabel);
+            return null;
+        }
+
+        int priority = intOr(json, "priority", 0);
+        MobGearRule.Slot mainhand = parseSlot(json.getAsJsonObject("mainhand"), fileLabel, options);
+        MobGearRule.Armor armor = parseArmor(json.getAsJsonObject("armor"), fileLabel);
+        return new MobGearRule(List.copyOf(matchers), mainhand, armor, priority);
     }
 
-    record SlotJson(float chance, List<ItemJson> items) {
-        static final Codec<SlotJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.FLOAT.optionalFieldOf("chance", 1.0F).forGetter(SlotJson::chance),
-                ItemJson.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(SlotJson::items)
-        ).apply(instance, SlotJson::new));
-
-        MobGearRule.Slot toSlot() {
-            List<MobGearRule.Weighted> resolved = new ArrayList<>();
-            for (ItemJson json : this.items) {
-                Item item = BuiltInRegistries.ITEM.get(json.item());
-                if (item == Items.AIR && !BuiltInRegistries.ITEM.containsKey(json.item())) {
-                    LOGGER.warn("[fabrimechanus] unknown item '{}' in mob gear config, skipping it", json.item());
+    private static MobGearRule.Slot parseSlot(@Nullable JsonObject json, String fileLabel, MainOptions options) {
+        if (json == null) {
+            return MobGearRule.Slot.EMPTY;
+        }
+        MaterialWeights materials = parseWeights(json.getAsJsonObject("materials"), MaterialWeights.DEFAULT);
+        List<MobGearRule.Weighted> items = new ArrayList<>();
+        Set<ResourceLocation> seen = new HashSet<>();
+        JsonElement itemsElement = json.get("items");
+        if (itemsElement != null && itemsElement.isJsonArray()) {
+            for (JsonElement element : itemsElement.getAsJsonArray()) {
+                if (!element.isJsonObject()) {
                     continue;
                 }
-                resolved.add(new MobGearRule.Weighted(item, json.weight()));
+                JsonObject itemJson = element.getAsJsonObject();
+                ResourceLocation id = ResourceLocation.tryParse(stringOr(itemJson, "item", ""));
+                if (id == null) {
+                    LOGGER.warn("[fabrimechanus] invalid item id in {}", fileLabel);
+                    continue;
+                }
+                String idText = id.toString();
+                if (ANCIENT_TOOLS.contains(idText)) {
+                    continue;
+                }
+                boolean enabled = itemJson.has("enabled")
+                        ? itemJson.get("enabled").getAsBoolean()
+                        : !WIDE_TOOLS.contains(idText);
+                if (!enabled) {
+                    continue;
+                }
+                Item item = BuiltInRegistries.ITEM.get(id);
+                if (item == Items.AIR && !BuiltInRegistries.ITEM.containsKey(id)) {
+                    if (options.logUnknownItems()) {
+                        LOGGER.warn("[fabrimechanus] unknown item '{}' in {}, skipping it", id, fileLabel);
+                    }
+                    continue;
+                }
+                if (!seen.add(id)) {
+                    LOGGER.warn("[fabrimechanus] duplicate item '{}' in {}, keeping the first enabled entry", id, fileLabel);
+                    continue;
+                }
+                items.add(new MobGearRule.Weighted(item, intOr(itemJson, "weight", 1)));
             }
-            return new MobGearRule.Slot(chance, List.copyOf(resolved));
         }
+        return new MobGearRule.Slot(List.copyOf(items), materials);
     }
 
-    record ItemJson(ResourceLocation item, int weight) {
-        static final Codec<ItemJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ResourceLocation.CODEC.fieldOf("item").forGetter(ItemJson::item),
-                Codec.INT.optionalFieldOf("weight", 1).forGetter(ItemJson::weight)
-        ).apply(instance, ItemJson::new));
-    }
-
-    /** Accepts both {@code "set": "plate"} and {@code "sets": [{"set": "plate", "weight": 3}, ...]}. */
-    record ArmorJson(float chance, Optional<String> set, List<SetJson> sets) {
-        static final Codec<ArmorJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.FLOAT.optionalFieldOf("chance", 0.0F).forGetter(ArmorJson::chance),
-                Codec.STRING.optionalFieldOf("set").forGetter(ArmorJson::set),
-                SetJson.CODEC.listOf().optionalFieldOf("sets", List.of()).forGetter(ArmorJson::sets)
-        ).apply(instance, ArmorJson::new));
-
-        MobGearRule.Armor toArmor() {
-            List<MobGearRule.ArmorChoice> choices = new ArrayList<>();
-            for (SetJson json : this.sets) {
-                MobGearRule.ArmorSet set = parseSet(json.set());
+    private static MobGearRule.Armor parseArmor(@Nullable JsonObject json, String fileLabel) {
+        if (json == null) {
+            return MobGearRule.Armor.NONE;
+        }
+        List<MobGearRule.ArmorChoice> choices = new ArrayList<>();
+        JsonElement sets = json.get("sets");
+        if (sets != null && sets.isJsonArray()) {
+            for (JsonElement element : sets.getAsJsonArray()) {
+                if (!element.isJsonObject()) {
+                    continue;
+                }
+                JsonObject setJson = element.getAsJsonObject();
+                MobGearRule.ArmorSet set = parseSet(stringOr(setJson, "set", ""));
                 if (set != MobGearRule.ArmorSet.NONE) {
-                    choices.add(new MobGearRule.ArmorChoice(set, json.weight()));
+                    choices.add(new MobGearRule.ArmorChoice(set, intOr(setJson, "weight", 1)));
                 }
             }
-            if (choices.isEmpty() && this.set.isPresent()) {
-                MobGearRule.ArmorSet set = parseSet(this.set.get());
-                if (set != MobGearRule.ArmorSet.NONE) {
-                    choices.add(new MobGearRule.ArmorChoice(set, 1));
-                }
-            }
-            return choices.isEmpty() ? MobGearRule.Armor.NONE : new MobGearRule.Armor(chance, List.copyOf(choices));
         }
+        if (choices.isEmpty() && json.has("set")) {
+            MobGearRule.ArmorSet set = parseSet(json.get("set").getAsString());
+            if (set != MobGearRule.ArmorSet.NONE) {
+                choices.add(new MobGearRule.ArmorChoice(set, 1));
+            }
+        }
+
+        MaterialWeights materials = parseWeights(json.getAsJsonObject("materials"), MaterialWeights.DEFAULT);
+        return choices.isEmpty() ? MobGearRule.Armor.NONE : new MobGearRule.Armor(List.copyOf(choices), materials);
     }
 
-    record SetJson(String set, int weight) {
-        static final Codec<SetJson> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.STRING.fieldOf("set").forGetter(SetJson::set),
-                Codec.INT.optionalFieldOf("weight", 1).forGetter(SetJson::weight)
-        ).apply(instance, SetJson::new));
+    private static MaterialWeights parseWeights(@Nullable JsonObject json, MaterialWeights fallback) {
+        if (json == null) {
+            return fallback;
+        }
+        return new MaterialWeights(
+                intOr(json, "tier1", fallback.tier1()),
+                intOr(json, "tier2", fallback.tier2()),
+                intOr(json, "tier3", fallback.tier3()),
+                intOr(json, "tier4", fallback.tier4())
+        );
     }
 
-    /** Parses an armor set name, warning and falling back to {@code none} for unknown values. */
+    private static List<String> stringList(@Nullable JsonArray array) {
+        if (array == null) {
+            return List.of();
+        }
+        List<String> values = new ArrayList<>();
+        for (JsonElement element : array) {
+            values.add(element.getAsString());
+        }
+        return values;
+    }
+
+    private static int intOr(JsonObject json, String key, int fallback) {
+        return json.has(key) ? json.get(key).getAsInt() : fallback;
+    }
+
+    private static String stringOr(JsonObject json, String key, String fallback) {
+        return json.has(key) ? json.get(key).getAsString() : fallback;
+    }
+
     private static MobGearRule.ArmorSet parseSet(String name) {
         try {
             return MobGearRule.ArmorSet.valueOf(name.toUpperCase(Locale.ROOT));
@@ -330,5 +362,8 @@ public final class MobGearConfig implements PreparableReloadListener {
             LOGGER.warn("[fabrimechanus] unknown armor set '{}' in mob gear config, expected plate/travelers/none", name);
             return MobGearRule.ArmorSet.NONE;
         }
+    }
+
+    private record MainOptions(boolean enabled, boolean logUnknownItems) {
     }
 }

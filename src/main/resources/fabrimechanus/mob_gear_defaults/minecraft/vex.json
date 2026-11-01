@@ -1,17 +1,20 @@
 {
   "priority": 0,
-  "materialTier": 0,
   "mobs": [
     "minecraft:vex"
   ],
   "mainhand": {
-    "chance": 1,
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    },
     "items": [
       {
-        "item": "tconstruct:dagger"
-      },
-      {
-        "item": "tconstruct:sword"
+        "item": "tconstruct:sword",
+        "weight": 1,
+        "enabled": true
       }
     ]
   }

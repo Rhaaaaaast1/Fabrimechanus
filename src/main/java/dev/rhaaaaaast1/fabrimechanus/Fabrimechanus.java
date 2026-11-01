@@ -1,6 +1,7 @@
 package dev.rhaaaaaast1.fabrimechanus;
 
 import com.mojang.logging.LogUtils;
+import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveConfig;
 import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveEvents;
 import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveFeatures;
 import dev.rhaaaaaast1.fabrimechanus.primitive.PrimitiveLoot;
@@ -38,6 +39,7 @@ public class Fabrimechanus {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        PrimitiveConfig.ensureAndLoad();
         // Tinkers' Construct is optional: only hook its loot/AI integration when the mod is actually loaded
         if (TinkersIntegration.isLoaded()) {
             TinkersIntegration.register();

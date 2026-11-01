@@ -1,23 +1,25 @@
 {
   "priority": 0,
-  "materialTier": 0,
   "mobs": [
     "minecraft:vindicator"
   ],
   "mainhand": {
-    "chance": 1,
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    },
     "items": [
       {
         "item": "tconstruct:hand_axe",
-        "weight": 8
-      },
-      {
-        "item": "tconstruct:kama",
-        "weight": 1
+        "weight": 4,
+        "enabled": true
       },
       {
         "item": "tconstruct:broad_axe",
-        "weight": 1
+        "weight": 1,
+        "enabled": true
       }
     ]
   }

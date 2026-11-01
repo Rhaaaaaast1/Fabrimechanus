@@ -1,24 +1,29 @@
 {
   "priority": 5,
-  "materialTier": 0,
   "mobs": [
     "minecraft:wither_skeleton"
   ],
   "mainhand": {
-    "chance": 1,
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    },
     "items": [
       {
         "item": "tconstruct:sword",
-        "weight": 1.5
+        "weight": 4,
+        "enabled": true
       },
       {
         "item": "tconstruct:cleaver",
-        "weight": 0.5
+        "weight": 1,
+        "enabled": true
       }
     ]
   },
   "armor": {
-    "chance": 0.15,
     "sets": [
       {
         "set": "travelers",
@@ -26,8 +31,14 @@
       },
       {
         "set": "plate",
-        "weight": 1
+        "weight": 2
       }
-    ]
+    ],
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    }
   }
 }

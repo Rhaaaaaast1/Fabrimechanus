@@ -4,8 +4,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -15,21 +15,12 @@ import net.minecraft.world.item.ItemStack;
 import slimeknights.tconstruct.tools.TinkerTools;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * One datapack entry: which mobs may spawn with which Tinkers' Construct gear.
- *
- * <p>Weights are relative within a slot: a weapon list of {@code sword(5), cleaver(2)} means the sword is rolled five
- * times out of seven. Every tool is built through {@link ToolFactory}, so each part still gets its own material roll
- * from the tier weights in the config file.</p>
- *
- * <p>Instances are produced by {@link MobGearReloadListener}; nothing in here references JSON types, so a future
- * format change only touches the listener.</p>
+ * One mob gear rule. Vanilla gear is stripped first; this rule only builds the replacement Tinkers' gear.
  */
-public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, Armor armor, int priority,
-                          int materialTier) {
+public record MobGearRule(List<Matcher> matchers, Slot mainhand, Armor armor, int priority) {
     /** Matches a mob by entity id or by entity type tag. */
     public sealed interface Matcher permits IdMatcher, TagMatcher {
         boolean matches(Mob mob);
@@ -49,16 +40,16 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
         }
     }
 
-    /** A slot rule: roll {@code chance}, then pick one of the weighted items. */
-    public record Slot(float chance, List<Weighted> items) {
-        public static final Slot EMPTY = new Slot(0.0F, List.of());
+    /** Weighted Tinkers' tools and their material tier weights. */
+    public record Slot(List<Weighted> items, MaterialWeights materials) {
+        public static final Slot EMPTY = new Slot(List.of(), MaterialWeights.DEFAULT);
 
         public boolean isEmpty() {
-            return items.isEmpty() || chance <= 0.0F;
+            return items.isEmpty();
         }
 
-        /** Builds one weighted tool, or an empty stack when this slot has no candidates. */
-        public ItemStack roll(RandomSource random, RegistryAccess access, int materialTier) {
+        /** Picks one enabled item and builds it with a tier rolled from this slot's weights. */
+        public ItemStack roll(RandomSource random, RegistryAccess access) {
             if (items.isEmpty()) {
                 return ItemStack.EMPTY;
             }
@@ -70,7 +61,7 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
             for (Weighted weighted : items) {
                 roll -= clampWeight(weighted.weight());
                 if (roll < 0) {
-                    return ToolFactory.build(weighted.item(), random, access, materialTier);
+                    return ToolFactory.build(weighted.item(), random, access, materials);
                 }
             }
             return ItemStack.EMPTY;
@@ -80,20 +71,14 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
     public record Weighted(Item item, int weight) {
     }
 
-    /**
-     * Which armor set a mob may spawn with, plus the chance for the whole set.
-     *
-     * <p>Several sets can be listed with weights, in which case one set is rolled per mob and the whole set uses it, so
-     * a mob never ends up with a mixed plate/travelers outfit.</p>
-     */
-    public record Armor(float chance, List<ArmorChoice> choices) {
-        public static final Armor NONE = new Armor(0.0F, List.of());
+    /** Armor set choice plus one material tier roll shared by the whole set. */
+    public record Armor(List<ArmorChoice> choices, MaterialWeights materials) {
+        public static final Armor NONE = new Armor(List.of(), MaterialWeights.DEFAULT);
 
         public boolean isEmpty() {
-            return chance <= 0.0F || choices.isEmpty();
+            return choices.isEmpty();
         }
 
-        /** Picks the set for this mob, or {@link ArmorSet#NONE} when this rule adds no armor. */
         public ArmorSet roll(RandomSource random) {
             if (choices.isEmpty()) {
                 return ArmorSet.NONE;
@@ -112,7 +97,6 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
             return choices.get(0).set();
         }
 
-        /** Resolves the armor item for one slot, or null when the set has no piece for it. */
         @Nullable
         public static Item item(ArmorSet set, ArmorItem.Type type) {
             return switch (set) {
@@ -123,7 +107,6 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
         }
     }
 
-    /** One possible armor set with its relative weight. */
     public record ArmorChoice(ArmorSet set, int weight) {
     }
 
@@ -142,24 +125,16 @@ public record MobGearRule(List<Matcher> matchers, Slot mainhand, Slot offhand, A
         return false;
     }
 
-    /** True if this rule hands out any weapon at all; used to skip the main hand roll entirely. */
-    public boolean hasWeapon() {
-        return !mainhand.isEmpty();
-    }
-
     public static TagKey<EntityType<?>> entityTag(ResourceLocation id) {
         return TagKey.create(Registries.ENTITY_TYPE, id);
     }
 
-    /** Upper bound for a single relative weight, so a hand written file cannot starve every other entry. */
     private static final int MAX_WEIGHT = 100_000;
 
-    /** Weights below one would make {@code nextInt(total)} meaningless, so they are treated as a single share. */
     private static int clampWeight(int weight) {
         return Mth.clamp(weight, 1, MAX_WEIGHT);
     }
 
-    /** Saturating sum, a pack listing thousands of entries must not overflow the roll into a negative bound. */
     private static int addWeight(int total, int weight) {
         return (int) Math.min(Integer.MAX_VALUE, (long) total + clampWeight(weight));
     }

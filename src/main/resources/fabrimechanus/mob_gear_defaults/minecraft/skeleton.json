@@ -1,60 +1,39 @@
 {
   "priority": 0,
-  "materialTier": 0,
   "mobs": [
     "minecraft:skeleton"
   ],
   "mainhand": {
-    "chance": 1,
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    },
     "items": [
       {
         "item": "tconstruct:longbow",
-        "weight": 85
-      },
-      {
-        "item": "tconstruct:pickaxe",
-        "weight": 1
-      },
-      {
-        "item": "tconstruct:mattock",
-        "weight": 1
-      },
-      {
-        "item": "tconstruct:pickadze",
-        "weight": 1
-      },
-      {
-        "item": "tconstruct:hand_axe",
-        "weight": 2
-      },
-      {
-        "item": "tconstruct:kama",
-        "weight": 2
-      },
-      {
-        "item": "tconstruct:dagger",
-        "weight": 2
+        "weight": 85,
+        "enabled": true
       },
       {
         "item": "tconstruct:sword",
-        "weight": 2
+        "weight": 5,
+        "enabled": true
       },
       {
-        "item": "tconstruct:cleaver",
-        "weight": 1
+        "item": "tconstruct:dagger",
+        "weight": 5,
+        "enabled": true
       },
       {
-        "item": "tconstruct:broad_axe",
-        "weight": 1
-      },
-      {
-        "item": "tconstruct:scythe",
-        "weight": 1
+        "item": "tconstruct:hand_axe",
+        "weight": 5,
+        "enabled": true
       }
     ]
   },
   "armor": {
-    "chance": 0.1,
     "sets": [
       {
         "set": "travelers",
@@ -62,8 +41,14 @@
       },
       {
         "set": "plate",
-        "weight": 1
+        "weight": 2
       }
-    ]
+    ],
+    "materials": {
+      "tier1": 55,
+      "tier2": 35,
+      "tier3": 8,
+      "tier4": 2
+    }
   }
 }

@@ -4,8 +4,15 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import slimeknights.tconstruct.library.materials.IMaterialRegistry;
+import slimeknights.tconstruct.library.materials.MaterialRegistry;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
+import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
+import slimeknights.tconstruct.library.tools.definition.module.material.ToolMaterialHook;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.library.utils.ItemStackUtil;
 
@@ -45,6 +52,34 @@ public final class ToolFactory {
             stack = new ItemStack(item);
         }
         // a stack that cannot be written into a packet would disconnect every client that sees the mob
+        ItemStackUtil.ensurePacketSafe(stack, access);
+        return stack;
+    }
+
+    /** Builds a tool/armor piece using this rule's per-slot tier weights. */
+    public static ItemStack build(Item item, RandomSource random, RegistryAccess access, MaterialWeights weights) {
+        return build(item, random, access, weights == null ? 0 : weights.rollTier(random));
+    }
+
+    /** Builds a tool/armor piece with one fixed material, used for the piglin gold-plate armor. */
+    public static ItemStack buildWithMaterial(Item item, MaterialId materialId, RegistryAccess access) {
+        if (!(item instanceof IModifiable modifiable)) {
+            return new ItemStack(item);
+        }
+        IMaterialRegistry registry = MaterialRegistry.getInstance();
+        IMaterial material = registry.getMaterial(materialId);
+        if (material == null) {
+            return ItemStack.EMPTY;
+        }
+        ToolDefinition definition = modifiable.getToolDefinition();
+        if (!definition.hasMaterials()) {
+            return new ItemStack(item);
+        }
+        MaterialNBT.Builder builder = MaterialNBT.builder();
+        for (MaterialStatsId stat : ToolMaterialHook.stats(definition)) {
+            builder.add(material);
+        }
+        ItemStack stack = ToolStack.createTool(item, definition, builder.build()).createStack();
         ItemStackUtil.ensurePacketSafe(stack, access);
         return stack;
     }
