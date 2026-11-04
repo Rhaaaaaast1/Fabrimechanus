@@ -91,9 +91,21 @@ public final class PrimitiveEvents {
                 && isAxe(held)
                 && !PrimitiveTargets.contains(held.getItem())
                 && level.getBlockState(pos).is(BlockTags.LOGS)) {
-            if (!level.isClientSide()) {
-                AXE_SAWS.putIfAbsent(player.getUUID(),
-                        new AxeSaw(pos.immutable(), level.dimension(), level.getGameTime()));
+            BlockState state = level.getBlockState(pos);
+            if (isStrippedWood(state)) {
+                player.startUsingItem(event.getHand());
+                if (!level.isClientSide()) {
+                    AXE_SAWS.putIfAbsent(player.getUUID(),
+                            new AxeSaw(pos.immutable(), level.dimension(), level.getGameTime()));
+                }
+            } else if (!level.isClientSide()) {
+                Block stripped = strippedLogFor(state);
+                if (stripped != Blocks.AIR) {
+                    level.setBlock(pos, stripped.defaultBlockState(), 3);
+                    level.playSound(null, pos, SoundEvents.AXE_STRIP, SoundSource.PLAYERS, 0.8F, 1.0F);
+                    held.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+                    player.swing(InteractionHand.MAIN_HAND, true);
+                }
             }
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
@@ -223,7 +235,7 @@ public final class PrimitiveEvents {
             }
             Level level = player.serverLevel();
             BlockState state = level.getBlockState(saw.pos());
-            if (!state.is(BlockTags.LOGS) || !isAxe(player.getMainHandItem())) {
+            if (!isStrippedWood(state) || !isAxe(player.getMainHandItem())) {
                 continue;
             }
             Block planks = planksFor(state);
@@ -280,6 +292,23 @@ public final class PrimitiveEvents {
 
     private static boolean isAxe(ItemStack stack) {
         return !stack.isEmpty() && stack.is(ItemTags.AXES);
+    }
+
+    private static boolean isStrippedWood(BlockState state) {
+        if (!state.is(BlockTags.LOGS)) {
+            return false;
+        }
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        return id != null && id.getPath().startsWith("stripped_");
+    }
+
+    private static Block strippedLogFor(BlockState state) {
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (id == null) {
+            return Blocks.AIR;
+        }
+        return BuiltInRegistries.BLOCK.get(
+                ResourceLocation.fromNamespaceAndPath("minecraft", "stripped_" + id.getPath()));
     }
 
     private static Block planksFor(BlockState state) {

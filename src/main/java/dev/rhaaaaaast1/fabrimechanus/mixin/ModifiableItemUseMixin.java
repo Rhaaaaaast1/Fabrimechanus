@@ -1,6 +1,7 @@
 package dev.rhaaaaaast1.fabrimechanus.mixin;
 
 import dev.rhaaaaaast1.fabrimechanus.tinkers.TinkersSpearAi;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +24,8 @@ public abstract class ModifiableItemUseMixin {
     private void tinkersaddition$spearUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValueI() == 0 && TinkersSpearAi.isSpear(stack)) {
             cir.setReturnValue(72000);
+        } else if (cir.getReturnValueI() <= 0 && stack.is(ItemTags.AXES)) {
+            cir.setReturnValue(20);
         }
     }
 
@@ -30,6 +33,8 @@ public abstract class ModifiableItemUseMixin {
     private void tinkersaddition$spearUseAnimation(ItemStack stack, CallbackInfoReturnable<UseAnim> cir) {
         if (cir.getReturnValue() == UseAnim.NONE && TinkersSpearAi.isSpear(stack)) {
             cir.setReturnValue(UseAnim.SPEAR);
+        } else if (cir.getReturnValue() == UseAnim.NONE && stack.is(ItemTags.AXES)) {
+            cir.setReturnValue(UseAnim.BOW);
         }
     }
 }

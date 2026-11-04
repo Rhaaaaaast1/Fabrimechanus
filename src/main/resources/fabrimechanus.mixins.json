@@ -4,6 +4,7 @@
   "package": "dev.rhaaaaaast1.fabrimechanus.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "AxeItemUseMixin",
     "CrossbowAttackBehaviorMixin",
     "ModifiableItemUseMixin",
     "PiglinCrossbowMixin",
@@ -12,6 +13,8 @@
     "RangedCrossbowAttackGoalMixin"
   ],
   "client": [
+    "ConfirmExperimentalFeaturesScreenMixin",
+    "WorldOpenFlowsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
