@@ -25,6 +25,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -51,6 +52,7 @@ public final class PrimitiveEvents {
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onRightClickItem);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onAttack);
+        NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onStopUsingItem);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onServerTick);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onCrafted);
     }
@@ -180,6 +182,12 @@ public final class PrimitiveEvents {
         axe.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
         if (!axe.isEmpty() && !player.getInventory().add(axe)) {
             player.drop(axe, false);
+        }
+    }
+
+    private static void onStopUsingItem(LivingEntityUseItemEvent.Stop event) {
+        if (event.getDuration() > 0 && event.getEntity() instanceof Player player) {
+            AXE_SAWS.remove(player.getUUID());
         }
     }
 
