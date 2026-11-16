@@ -25,7 +25,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
@@ -52,7 +51,6 @@ public final class PrimitiveEvents {
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onRightClickItem);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onLeftClickBlock);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onAttack);
-        NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onStopUsingItem);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onServerTick);
         NeoForge.EVENT_BUS.addListener(PrimitiveEvents::onCrafted);
     }
@@ -92,7 +90,7 @@ public final class PrimitiveEvents {
         if (event.getHand() == InteractionHand.MAIN_HAND
                 && isAxe(held)
                 && !PrimitiveTargets.contains(held.getItem())
-                && level.getBlockState(pos).is(BlockTags.LOGS)) {
+                && isLogLike(level.getBlockState(pos))) {
             BlockState state = level.getBlockState(pos);
             if (isStrippedWood(state)) {
                 player.startUsingItem(event.getHand());
@@ -182,12 +180,6 @@ public final class PrimitiveEvents {
         axe.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
         if (!axe.isEmpty() && !player.getInventory().add(axe)) {
             player.drop(axe, false);
-        }
-    }
-
-    private static void onStopUsingItem(LivingEntityUseItemEvent.Stop event) {
-        if (event.getDuration() > 0 && event.getEntity() instanceof Player player) {
-            AXE_SAWS.remove(player.getUUID());
         }
     }
 
@@ -299,15 +291,39 @@ public final class PrimitiveEvents {
     }
 
     private static boolean isAxe(ItemStack stack) {
-        return !stack.isEmpty() && stack.is(ItemTags.AXES);
+        if (stack.isEmpty()) {
+            return false;
+        }
+        if (stack.is(ItemTags.AXES)) {
+            return true;
+        }
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return id != null && id.getPath().endsWith("_axe");
     }
 
     private static boolean isStrippedWood(BlockState state) {
-        if (!state.is(BlockTags.LOGS)) {
-            return false;
+        if (MynethersDelightCompat.isStrippedPowderyBlock(state)) {
+            return true;
         }
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return id != null && id.getPath().startsWith("stripped_");
+        if (id == null) {
+            return false;
+        }
+        String path = id.getPath();
+        return path.startsWith("stripped_")
+                && (path.endsWith("_log") || path.endsWith("_wood")
+                || path.endsWith("_stem") || path.endsWith("_hyphae")
+                || path.endsWith("_block"));
+    }
+
+    private static boolean isLogLike(BlockState state) {
+        if (state.is(BlockTags.LOGS) || isStrippedWood(state)
+                || MynethersDelightCompat.isPowderyBlock(state)) {
+            return true;
+        }
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        return id != null && ("bamboo_block".equals(id.getPath())
+                || "stripped_bamboo_block".equals(id.getPath()));
     }
 
     private static Block strippedLogFor(BlockState state) {
@@ -316,10 +332,14 @@ public final class PrimitiveEvents {
             return Blocks.AIR;
         }
         return BuiltInRegistries.BLOCK.get(
-                ResourceLocation.fromNamespaceAndPath("minecraft", "stripped_" + id.getPath()));
+                ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "stripped_" + id.getPath()));
     }
 
     private static Block planksFor(BlockState state) {
+        Block compat = MynethersDelightCompat.planksFor(state);
+        if (compat != null) {
+            return compat;
+        }
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         if (id == null) {
             return Blocks.AIR;
@@ -331,7 +351,8 @@ public final class PrimitiveEvents {
                 .replaceFirst("_stem$", "")
                 .replaceFirst("_hyphae$", "")
                 .replaceFirst("_block$", "");
-        return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("minecraft", path + "_planks"));
+        return BuiltInRegistries.BLOCK.get(
+                ResourceLocation.fromNamespaceAndPath(id.getNamespace(), path + "_planks"));
     }
 
     private record PlantPull(BlockPos pos, ResourceKey<Level> dimension, long startTick) {

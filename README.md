@@ -5,7 +5,7 @@
 
 - GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
 - License: MIT
-- Version: **1.2.0**
+- Version: **1.3.0**
 - Minecraft: **1.21.1**
 - Loader: **NeoForge 21.1.x**
 - Optional: **Tinkers' Construct 3.13.x**, **Mantle**
@@ -117,6 +117,54 @@ Wooden blocks (logs, wood, planks, stairs, slabs, fences, gates, doors, trapdoor
 - 空手尝试：受到 **1 点伤害（半颗心）**、小击退，并显示动作栏消息 `你疯了?为什么要空手打树?`。
 - 非斧类物品也无法破坏这些方块，方块会直接抵抗。
 - 方块列表为 `#fabrimechanus:requires_axe`。
+
+---
+
+## Item cleanup / 掉落物清理
+
+Every configured interval, loaded `ItemEntity` drops are removed in every dimension. This uses the server tick API, not commands.
+
+- Default interval: **12000 ticks (10 minutes)**.
+- Warning: the last **10 seconds**, once per second, in the action bar.
+- By default, no-pickup items (`pickupDelay == Short.MAX_VALUE`) and no-despawn items (`age == Short.MIN_VALUE`) are preserved.
+- The count is the number of items, not the number of item entities.
+- Only entities in loaded chunks are affected; unloaded chunks are not forced to load.
+
+Config file:
+
+```text
+config/fabrimechanus/item_cleanup.json
+```
+
+```json
+{
+  "enabled": true,
+  "interval_ticks": 12000,
+  "warn_seconds": 10,
+  "preserve_no_pickup": true,
+  "preserve_no_despawn": true,
+  "show_clear_message": true,
+  "action_bar": true
+}
+```
+
+`interval_ticks` is ticks (20 ticks = 1 second). `warn_seconds: 0` disables the countdown. Set `enabled: false` to disable cleanup entirely.
+
+每隔配置的时间，清理所有维度中已加载区块里的 `ItemEntity` 掉落物，使用服务器 tick API，不使用命令。
+
+- 默认间隔：**12000 tick（10 分钟）**。
+- 清理前 **10 秒**每秒在动作栏提醒一次。
+- 默认保留不可拾取物品（`pickupDelay == Short.MAX_VALUE`）和永久不消失物品（`age == Short.MIN_VALUE`）。
+- 统计的是物品数量，不是掉落物实体数量。
+- 只处理已加载区块中的实体，不会强制加载未加载区块。
+
+配置文件：
+
+```text
+config/fabrimechanus/item_cleanup.json
+```
+
+`interval_ticks` 单位是 tick（20 tick = 1 秒）。`warn_seconds: 0` 关闭倒计时；`enabled: false` 关闭整个清理功能。
 
 ---
 

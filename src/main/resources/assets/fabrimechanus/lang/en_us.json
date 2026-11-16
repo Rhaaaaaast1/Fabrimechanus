@@ -24,5 +24,9 @@
   "jei.fabrimechanus.plant_fiber": "Hold empty-hand right-click on grass for 20 ticks to pull 1-2 plant fiber. Three fiber craft one plant cord.",
   "jei.fabrimechanus.plant_cord": "Used to craft the crude stone and flint axes.",
   "jei.fabrimechanus.stone_axe": "Durability 10. Charged right-click on stripped wood saws 2 planks.",
-  "jei.fabrimechanus.flint_axe": "Durability 10. Charged right-click on stripped wood saws 2 planks."
+  "jei.fabrimechanus.flint_axe": "Durability 10. Charged right-click on stripped wood saws 2 planks.",
+  "advancement.fabrimechanus.stone_and_flint.title": "Stone from Another Mountain",
+  "advancement.fabrimechanus.stone_and_flint.description": "Obtain a pebble or a flint pebble.",
+  "advancement.fabrimechanus.plant_fiber.title": "Grass into Rope",
+  "advancement.fabrimechanus.plant_fiber.description": "Obtain plant fiber."
 }

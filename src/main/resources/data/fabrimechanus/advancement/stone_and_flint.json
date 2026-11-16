@@ -1,0 +1,50 @@
+{
+  "display": {
+    "icon": {
+      "id": "fabrimechanus:small_pebble"
+    },
+    "title": {
+      "translate": "advancement.fabrimechanus.stone_and_flint.title"
+    },
+    "description": {
+      "translate": "advancement.fabrimechanus.stone_and_flint.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "minecraft:textures/block/stone.png"
+  },
+  "criteria": {
+    "pebble": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "fabrimechanus:small_pebble"
+            ]
+          }
+        ]
+      }
+    },
+    "flint": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "fabrimechanus:small_flint"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "pebble",
+      "flint"
+    ]
+  ]
+}

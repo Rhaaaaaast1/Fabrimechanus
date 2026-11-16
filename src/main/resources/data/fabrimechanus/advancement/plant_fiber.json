@@ -1,0 +1,32 @@
+{
+  "parent": "fabrimechanus:stone_and_flint",
+  "display": {
+    "icon": {
+      "id": "fabrimechanus:plant_fiber"
+    },
+    "title": {
+      "translate": "advancement.fabrimechanus.plant_fiber.title"
+    },
+    "description": {
+      "translate": "advancement.fabrimechanus.plant_fiber.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "fiber": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "fabrimechanus:plant_fiber"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

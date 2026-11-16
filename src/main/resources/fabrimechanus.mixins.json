@@ -10,7 +10,8 @@
     "PiglinCrossbowMixin",
     "PillagerPoseMixin",
     "PiglinPoseMixin",
-    "RangedCrossbowAttackGoalMixin"
+    "RangedCrossbowAttackGoalMixin",
+    "ItemEntityAccessor"
   ],
   "client": [
     "ConfirmExperimentalFeaturesScreenMixin",

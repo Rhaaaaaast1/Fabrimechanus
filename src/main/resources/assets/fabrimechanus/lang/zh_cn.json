@@ -24,5 +24,9 @@
   "jei.fabrimechanus.plant_fiber": "空手按住右键对草蓄力 20 tick，可拔出 1-2 个植物纤维。3 个纤维合成 1 个植物绳。",
   "jei.fabrimechanus.plant_cord": "用于合成简陋的石斧和燧石斧。",
   "jei.fabrimechanus.stone_axe": "耐久 10。对去皮木头蓄力右键可锯出 2 个木板。",
-  "jei.fabrimechanus.flint_axe": "耐久 10。对去皮木头蓄力右键可锯出 2 个木板。"
+  "jei.fabrimechanus.flint_axe": "耐久 10。对去皮木头蓄力右键可锯出 2 个木板。",
+  "advancement.fabrimechanus.stone_and_flint.title": "他山之石，可以攻玉",
+  "advancement.fabrimechanus.stone_and_flint.description": "获得石子或燧石石子任意一种。",
+  "advancement.fabrimechanus.plant_fiber.title": "蔓草为绳，可缚顽石",
+  "advancement.fabrimechanus.plant_fiber.description": "获得植物纤维。"
 }

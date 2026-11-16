@@ -61,13 +61,26 @@ public final class PrimitiveFeatures {
             }
 
             BlockState below = level.getBlockState(pos.below());
-            if (!below.is(support)) {
+            BlockState current = level.getBlockState(pos);
+
+            // Snowy biomes put the heightmap on top of snow. Replace the top
+            // snow directly; never place a rock above the snow layer.
+            BlockPos placement = pos;
+            boolean replacingSnow = false;
+            if (current.is(Blocks.SNOW) || current.is(Blocks.SNOW_BLOCK)) {
+                replacingSnow = true;
+            } else if (below.is(Blocks.SNOW) || below.is(Blocks.SNOW_BLOCK)) {
+                placement = pos.below();
+                replacingSnow = true;
+            }
+
+            if (!level.getBlockState(placement.below()).is(support)) {
                 return false;
             }
 
-            BlockState current = level.getBlockState(pos);
-            boolean water = current.is(Blocks.WATER);
-            if (!current.isAir() && !water) {
+            BlockState target = level.getBlockState(placement);
+            boolean water = target.is(Blocks.WATER);
+            if (!replacingSnow && !target.isAir() && !water) {
                 return false;
             }
 
@@ -75,7 +88,8 @@ public final class PrimitiveFeatures {
             if (state.hasProperty(LooseRockBlock.WATERLOGGED)) {
                 state = state.setValue(LooseRockBlock.WATERLOGGED, water);
             }
-            return level.setBlock(pos, state, 2);
+            // A single setBlock replaces the snow layer/block; no air pass.
+            return level.setBlock(placement, state, 2);
         }
     }
 }
