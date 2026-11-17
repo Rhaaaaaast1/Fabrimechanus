@@ -1,6 +1,6 @@
 package dev.rhaaaaaast1.fabrimechanus.compat;
 
-import dev.rhaaaaaast1.fabrimechanus.mixin.ComposterBlockMixin;
+import dev.rhaaaaaast1.fabrimechanus.compat.ComposterOutput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -42,7 +42,7 @@ public final class ComposterOutputContainer implements WorldlyContainer {
 
     @Override
     public ItemStack getItem(int slot) {
-        return slot == 0 && ready() ? new ItemStack(ComposterBlockMixin.fabrimechanus$getOutput()) : ItemStack.EMPTY;
+        return slot == 0 && ready() ? new ItemStack(ComposterOutput.get()) : ItemStack.EMPTY;
     }
 
     @Override
@@ -51,7 +51,7 @@ public final class ComposterOutputContainer implements WorldlyContainer {
             return ItemStack.EMPTY;
         }
         taken = true;
-        ItemStack output = new ItemStack(ComposterBlockMixin.fabrimechanus$getOutput(), count);
+        ItemStack output = new ItemStack(ComposterOutput.get(), count);
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.setBlock(pos, state.setValue(ComposterBlock.LEVEL, 0), 3);
             serverLevel.playSound(null, pos, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
