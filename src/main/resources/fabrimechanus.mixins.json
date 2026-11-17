@@ -11,7 +11,8 @@
     "PillagerPoseMixin",
     "PiglinPoseMixin",
     "RangedCrossbowAttackGoalMixin",
-    "ItemEntityAccessor"
+    "ItemEntityAccessor",
+    "ComposterBlockMixin"
   ],
   "client": [
     "ConfirmExperimentalFeaturesScreenMixin",

@@ -5,7 +5,7 @@
 
 - GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
 - License: MIT
-- Version: **1.3.0**
+- Version: **1.4.0**
 - Minecraft: **1.21.1**
 - Loader: **NeoForge 21.1.x**
 - Optional: **Tinkers' Construct 3.13.x**, **Mantle**
@@ -165,6 +165,32 @@ config/fabrimechanus/item_cleanup.json
 ```
 
 `interval_ticks` 单位是 tick（20 tick = 1 秒）。`warn_seconds: 0` 关闭倒计时；`enabled: false` 关闭整个清理功能。
+
+---
+
+## Composter output / 堆肥桶产物
+
+The composter output is configured from a KubeJS startup script. No KubeJS event is registered.
+
+```js
+// kubejs/startup_scripts/composter_output.js
+ComposterOutput.setOutput('minecraft:composter')
+```
+
+- `ComposterOutput` is exposed as a KubeJS binding.
+- Right-click extraction is handled by `ComposterBlockMixin`.
+- Hopper extraction is handled by `getContainer()` and `ComposterOutputContainer`.
+- Output is a single item with count 1.
+- Invalid item IDs leave the default bone meal unchanged.
+- No unloaded chunks are involved.
+
+堆肥桶产物由 KubeJS 启动脚本设置，不注册自定义事件。
+
+```js
+ComposterOutput.setOutput('minecraft:composter')
+```
+
+右键取出和漏斗取出都会使用这个产物。无效物品 ID 会继续使用骨粉。
 
 ---
 
