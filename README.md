@@ -5,7 +5,7 @@
 
 - GitHub: https://github.com/Rhaaaaaast1/Fabrimechanus
 - License: MIT
-- Version: **1.4.3**
+- Version: **1.4.4**
 - Minecraft: **1.21.1**
 - Loader: **NeoForge 21.1.x**
 - Optional: **Tinkers' Construct 3.13.x**, **Mantle**

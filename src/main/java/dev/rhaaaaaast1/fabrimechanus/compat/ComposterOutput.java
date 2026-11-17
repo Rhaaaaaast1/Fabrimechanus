@@ -7,31 +7,32 @@ import net.minecraft.world.item.Items;
 
 /** Static output selected by the KubeJS startup script. */
 public final class ComposterOutput {
-    private static volatile Item value = Items.BONE_MEAL;
+    private static volatile String outputId = "minecraft:bone_meal";
 
     private ComposterOutput() {
     }
 
     public static Item get() {
-        return value;
+        ResourceLocation rl = ResourceLocation.tryParse(outputId);
+        if (rl == null) {
+            return Items.BONE_MEAL;
+        }
+        Item item = BuiltInRegistries.ITEM.get(rl);
+        return item == Items.AIR ? Items.BONE_MEAL : item;
     }
 
     public static void setOutput(String id) {
         ResourceLocation rl = ResourceLocation.tryParse(id);
-        if (rl == null) {
-            return;
-        }
-        Item item = BuiltInRegistries.ITEM.get(rl);
-        if (item != Items.AIR) {
-            value = item;
+        if (rl != null) {
+            outputId = id;
         }
     }
 
     public static String getOutput() {
-        return BuiltInRegistries.ITEM.getKey(value).toString();
+        return outputId;
     }
 
     public static void reset() {
-        value = Items.BONE_MEAL;
+        outputId = "minecraft:bone_meal";
     }
 }
