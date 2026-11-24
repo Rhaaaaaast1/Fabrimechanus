@@ -16,10 +16,13 @@ public final class FabriKubeJSPlugin implements KubeJSPlugin {
         namespace.register("casting_table", TinkersRecipeSchemas.CASTING_TABLE);
         namespace.register("casting_basin", TinkersRecipeSchemas.CASTING_BASIN);
         namespace.register("casting_table_potion", TinkersRecipeSchemas.CASTING_TABLE_POTION);
+        namespace.register("casting_basin_potion", TinkersRecipeSchemas.CASTING_BASIN_POTION);
         namespace.register("table_duplication", TinkersRecipeSchemas.TABLE_DUPLICATION);
+        namespace.register("basin_duplication", TinkersRecipeSchemas.BASIN_DUPLICATION);
         namespace.register("table_filling", TinkersRecipeSchemas.TABLE_FILLING);
         namespace.register("basin_filling", TinkersRecipeSchemas.BASIN_FILLING);
         namespace.register("molding_table", TinkersRecipeSchemas.MOLDING_TABLE);
+        namespace.register("molding_basin", TinkersRecipeSchemas.MOLDING_BASIN);
         namespace.register("melting", TinkersRecipeSchemas.MELTING);
         namespace.register("melting_fuel", TinkersRecipeSchemas.MELTING_FUEL);
         namespace.register("alloy", TinkersRecipeSchemas.ALLOY);
