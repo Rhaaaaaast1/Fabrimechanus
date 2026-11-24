@@ -2,6 +2,8 @@ package dev.rhaaaaaast1.fabrimechanus.kubejs;
 
 import java.util.List;
 
+import com.mojang.datafixers.util.Either;
+
 import dev.latvian.mods.kubejs.recipe.RecipeKey;
 import dev.latvian.mods.kubejs.recipe.component.BooleanComponent;
 import dev.latvian.mods.kubejs.recipe.component.ComponentRole;
@@ -9,6 +11,7 @@ import dev.latvian.mods.kubejs.recipe.component.SizedFluidIngredientComponent;
 import dev.latvian.mods.kubejs.recipe.component.IngredientComponent;
 import dev.latvian.mods.kubejs.recipe.component.ListRecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.NumberComponent;
+import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.StringComponent;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 import dev.latvian.mods.kubejs.util.IntBounds;
@@ -51,6 +54,12 @@ public final class TinkersRecipeSchemas {
             .key("ingredient", ComponentRole.INPUT);
     private static final RecipeKey<String> RESULT = StringComponent.STRING
             .key("result", ComponentRole.OUTPUT);
+    // 浇铸配方的 result 是匠魂的 ItemOutput,既可能是物品 id 字符串,也可能是 {"tag": "..."} 标签对象.
+    // 单用 STRING 会让全部标签形态配方解析失败并回退原版,这里用字符串优先的 Either 同时容纳两者.
+    private static final RecipeComponent<Either<String, Ingredient>> CASTING_RESULT_COMPONENT =
+            StringComponent.STRING.instance().or(IngredientComponent.INGREDIENT.instance());
+    private static final RecipeKey<Either<String, Ingredient>> CASTING_RESULT = CASTING_RESULT_COMPONENT
+            .key("result", ComponentRole.OUTPUT);
     private static final RecipeKey<Integer> COOLING_TIME = NumberComponent.INT
             .key("cooling_time", ComponentRole.OTHER).optional(20);
     private static final RecipeKey<Double> COOLING_TIME_DOUBLE = NumberComponent.DOUBLE
@@ -67,9 +76,9 @@ public final class TinkersRecipeSchemas {
             .key("time", ComponentRole.OTHER);
 
     public static final RecipeSchema CASTING_TABLE =
-            new RecipeSchema(RESULT, FLUID, CAST, CAST_CONSUMED, COOLING_TIME, SWITCH_SLOTS);
+            new RecipeSchema(CASTING_RESULT, FLUID, CAST, CAST_CONSUMED, COOLING_TIME, SWITCH_SLOTS);
     public static final RecipeSchema CASTING_BASIN =
-            new RecipeSchema(RESULT, FLUID, CAST, CAST_CONSUMED, COOLING_TIME, SWITCH_SLOTS);
+            new RecipeSchema(CASTING_RESULT, FLUID, CAST, CAST_CONSUMED, COOLING_TIME, SWITCH_SLOTS);
     public static final RecipeSchema CASTING_TABLE_POTION =
             new RecipeSchema(RESULT, BOTTLE, FLUID, COOLING_TIME);
     public static final RecipeSchema TABLE_DUPLICATION =
