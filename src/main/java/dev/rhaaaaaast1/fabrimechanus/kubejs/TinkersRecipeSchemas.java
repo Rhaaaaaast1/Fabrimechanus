@@ -11,6 +11,7 @@ import dev.latvian.mods.kubejs.recipe.component.ListRecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.NumberComponent;
 import dev.latvian.mods.kubejs.recipe.component.StringComponent;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
+import dev.latvian.mods.kubejs.util.IntBounds;
 
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
@@ -25,7 +26,9 @@ public final class TinkersRecipeSchemas {
             SizedFluidIngredientComponent.FLAT.instance().asList();
     private static final RecipeKey<List<SizedFluidIngredient>> FLUID_INPUTS = FLUID_LIST
             .key("inputs", ComponentRole.INPUT);
+    // 副产物允许为空表,列表组件默认下限非 0,需要显式放宽边界,否则空表会被判为非法.
     private static final RecipeKey<List<SizedFluidIngredient>> BYPRODUCTS = FLUID_LIST
+            .withBounds(IntBounds.OPTIONAL)
             .key("byproducts", ComponentRole.OUTPUT).optional(List.of());
     private static final RecipeKey<Ingredient> CAST = IngredientComponent.INGREDIENT
             .key("cast", ComponentRole.INPUT).optional(Ingredient.EMPTY);
@@ -35,7 +38,8 @@ public final class TinkersRecipeSchemas {
             .key("switch_slots", ComponentRole.OTHER).optional(false);
     private static final RecipeKey<Ingredient> BOTTLE = IngredientComponent.INGREDIENT
             .key("bottle", ComponentRole.INPUT).optional(Ingredient.EMPTY);
-    private static final RecipeKey<String> GROUP = StringComponent.STRING
+    // group 默认空串,普通的 STRING 组件会把空串判为非法,必须用允许空的 OPTIONAL_STRING.
+    private static final RecipeKey<String> GROUP = StringComponent.OPTIONAL_STRING
             .key("group", ComponentRole.OTHER).optional("");
     private static final RecipeKey<String> CONTAINER = StringComponent.STRING
             .key("container", ComponentRole.OTHER);
